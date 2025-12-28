@@ -1,0 +1,247 @@
+Make.com Reality Rules & Syntax Guide
+(RK Field Reporting · Living Reference)
+Dated: December 23, 2025
+
+==============================
+PART I — EXECUTION & DATA FLOW
+==============================
+
+1) Pills follow the wire, not the scenario
+- Pills only exist if the module is directly upstream on the same connected path.
+- Router = timeline split.
+- Values created inside a branch do not exist outside that branch unless persisted.
+
+Persistence methods:
+- Execution variables
+- Data store
+- Sheet write + re-read
+
+2) Empty searches can soft-kill chains
+If Search Rows returns 0 bundles:
+- Aggregators never execute
+- Downstream modules may not run
+- Variables expected to be set are never written
+
+Rule: Never rely on bundle-dependent modules to set values required later.
+
+3) Init + Get Variables is necessary but not sufficient
+- Init execution variables early
+- Do searches/aggregations
+- Get Variables at the end
+- Final email must read ONLY from execution variables
+
+4) Why counts show 0 even with seeded rows
+Common causes:
+- Date format mismatch
+- Filtering text vs real date column
+- Control lookup wrong column (key/value needs Column B)
+- Set Variables never ran due to 0 bundles
+- Router filter referencing pill out of scope
+
+Smoking gun symptom:
+parseNumber(ifempty(;""))
+
+5) Routers do not merge data
+Routers fork execution only.
+Data merge requires:
+- Persistence
+- Or logic after Get Variables in one linear path
+
+6) Aggregators are scope walls
+Capture needed values before aggregators or duplicate searches.
+
+7) Set Variables only writes if it runs
+If upstream produces 0 bundles, nothing is written.
+
+8) Proven reliable architecture
+Trigger
+→ Control lookup (Key/Value)
+→ Gate
+→ Init execution variables
+→ For each list:
+   Search
+   Aggregate HTML
+   Set execution vars
+→ Get execution vars
+→ Compute totals
+→ Route
+→ Email (variables only)
+
+==============================
+PART II — SYNTAX GUIDE
+==============================
+
+Scenario variables:
+var.scenario.executionId
+var.scenario.executionName
+var.scenario.executionStartedAt
+var.scenario.executionType
+var.scenario.executionUrl
+var.scenario.id
+var.scenario.name
+var.scenario.creditsConsumed
+var.scenario.operationsConsumed
+var.scenario.dataConsumed
+var.scenario.isDLQExecution
+
+Team variables:
+var.team.id
+var.team.name
+
+Organization variables:
+var.organization.id
+var.organization.name
+var.organization.dataLeft
+var.organization.operationsLeft
+var.organization.zoneDomain
+
+------------------------------
+Date & Time
+------------------------------
+Variables:
+now
+timestamp
+
+Functions:
+addSeconds(;)
+addMinutes(;)
+addHours(;)
+addDays(;)
+addMonths(;)
+addYears(;)
+setSecond(;)
+setMinute(;)
+setHour(;)
+setDay(;)
+setDate(;)
+setMonth(;)
+setYear(;)
+formatDate(;)
+parseDate(;)
+
+Rule:
+MM/DD/YYYY or DD.MM.YYYY both valid — always be explicit.
+
+------------------------------
+Text & Binary
+------------------------------
+lower()
+upper()
+capitalize()
+startcase()
+trim()
+replace(; ;)
+replaceEmojiCharacters(;)
+substring(; ;)
+indexOf(;)
+contains(;)
+split(;)
+toBinary()
+toString()
+encodeURL()
+decodeURL()
+escapeHTML()
+escapeMarkdown()
+stripHTML()
+md5()
+sha1()
+sha256()
+sha512()
+base64()
+
+Keywords:
+space
+nbsp
+tab
+emptystring
+newline
+carriagereturn
+
+------------------------------
+Arrays / Collections
+------------------------------
+join(;)
+length()
+keys()
+slice(;)
+merge(;)
+add()
+remove()
+map(;)
+shuffle()
+sort()
+reverse()
+first()
+last()
+flatten()
+distinct()
+deduplicate()
+toCollection(; ;)
+toArray()
+
+Keyword:
+emptyarray
+
+------------------------------
+Math / Logic
+------------------------------
+average()
+ceil()
+floor()
+trunc()
+median()
+max()
+min()
+abs()
+round()
+sum()
+parseNumber(;)
+stdevS()
+stdevP()
+formatNumber(; ; ;)
+
+Operators:
+* / % + -
+< <= > >=
+= !=
+& |
+
+------------------------------
+Control / Mapping
+------------------------------
+if(; ;)
+ifempty(;)
+switch(; ;)
+get(;)
+omit()
+pick()
+
+Keywords:
+true
+false
+null
+ignore
+erase
+
+==============================
+PART III — WHAT TO AVOID
+==============================
+
+Non-existent functions:
+- concat()
+- coalesce()
+- includes()
+- parseInt()
+- parseFloat()
+- Any JS / Liquid helpers
+
+Logic traps:
+- Boolean math on Yes/No text
+- Cross-branch pill references
+- Pill references after aggregators
+- Math without defaults
+
+Correct numeric guard:
+parseNumber(ifempty(x; "0"))
+
+End of document.

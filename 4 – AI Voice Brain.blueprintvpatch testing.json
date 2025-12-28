@@ -1,0 +1,1209 @@
+{
+    "name": "4 – AI Voice Brain",
+    "flow": [
+        {
+            "id": 1,
+            "module": "gateway:CustomWebHook",
+            "version": 1,
+            "parameters": {
+                "hook": 1667877,
+                "maxResults": 1
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": -532,
+                    "y": 1499,
+                    "name": "Twilio Voice Entry"
+                },
+                "restore": {
+                    "parameters": {
+                        "hook": {
+                            "data": {
+                                "editable": "true"
+                            },
+                            "label": "4 - AI Voice Brain"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "hook",
+                        "type": "hook:gateway-webhook",
+                        "label": "Webhook",
+                        "required": true
+                    },
+                    {
+                        "name": "maxResults",
+                        "type": "number",
+                        "label": "Maximum number of results"
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "From",
+                        "type": "text"
+                    },
+                    {
+                        "name": "To",
+                        "type": "text"
+                    },
+                    {
+                        "name": "CallSid",
+                        "type": "text"
+                    },
+                    {
+                        "name": "AccountSid",
+                        "type": "text"
+                    },
+                    {
+                        "name": "CallStatus",
+                        "type": "text"
+                    },
+                    {
+                        "name": "ApiVersion",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Direction",
+                        "type": "text"
+                    },
+                    {
+                        "name": "FromCity",
+                        "type": "text"
+                    },
+                    {
+                        "name": "FromState",
+                        "type": "text"
+                    },
+                    {
+                        "name": "FromZip",
+                        "type": "text"
+                    },
+                    {
+                        "name": "FromCountry",
+                        "type": "text"
+                    },
+                    {
+                        "name": "ToCity",
+                        "type": "text"
+                    },
+                    {
+                        "name": "ToState",
+                        "type": "text"
+                    },
+                    {
+                        "name": "ToZip",
+                        "type": "text"
+                    },
+                    {
+                        "name": "ToCountry",
+                        "type": "text"
+                    },
+                    {
+                        "name": "CallerName",
+                        "type": "text"
+                    },
+                    {
+                        "name": "ParentCallSid",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Digits",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Mode",
+                        "type": "text"
+                    },
+                    {
+                        "name": "WorkerID",
+                        "type": "text"
+                    },
+                    {
+                        "name": "SiteRow",
+                        "type": "text"
+                    },
+                    {
+                        "name": "SiteName",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Language",
+                        "type": "text"
+                    },
+                    {
+                        "name": "CallLogID",
+                        "type": "text"
+                    },
+                    {
+                        "name": "ReportType",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Severity",
+                        "type": "text"
+                    },
+                    {
+                        "name": "SpeechResult",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Confidence",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Attempt_Number",
+                        "type": "text"
+                    },
+                    {
+                        "name": "AttemptNumber",
+                        "type": "text"
+                    },
+                    {
+                        "name": "AmdStatus",
+                        "type": "text"
+                    },
+                    {
+                        "name": "RecordingUrl",
+                        "type": "text"
+                    },
+                    {
+                        "name": "RecordingDuration",
+                        "type": "text"
+                    },
+                    {
+                        "name": "RecordingSid",
+                        "type": "text"
+                    },
+                    {
+                        "name": "RecordingStatus",
+                        "type": "text"
+                    },
+                    {
+                        "name": "PreviousStatus",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Completeness",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Category_Detected",
+                        "type": "text"
+                    },
+                    {
+                        "name": "AI_Summary",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Transcript",
+                        "type": "text"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 2,
+            "module": "builtin:BasicRouter",
+            "version": 1,
+            "mapper": null,
+            "metadata": {
+                "designer": {
+                    "x": -232,
+                    "y": 1499,
+                    "name": "State Machine"
+                }
+            },
+            "routes": [
+                {
+                    "flow": [
+                        {
+                            "id": 10,
+                            "module": "gateway:WebhookRespond",
+                            "version": 1,
+                            "parameters": {},
+                            "filter": {
+                                "name": "Initial (Mode empty)",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{ifempty(1.Mode; \"\")}}",
+                                            "b": "",
+                                            "o": "text:equal:ci"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>{{newline}}<Response>{{newline}}\n  <Say voice=\"{{if(contains(ifempty(1.Language; \"en-US\"); \"es\"); \"Polly.Mia\"; \"Polly.Matthew\")}}\" language=\"{{ifempty(1.Language; \"en-US\")}}\">{{if(contains(ifempty(1.Language; \"en-US\"); \"es\"); \"Bienvenido a RK Reportes. Para reportar una visita, presione 1. Para urgente, presione 2. Para fallas mecánicas, presione 4. Para nota general, presione 0. Para idioma, presione 9.\"; \"Welcome to RK Field Reporting. To report a visit, press 1. For urgent, press 2. For mechanical failure, press 4. For a general note, press 0. For language, press 9.\")}}</Say>{{newline}}\n  <Redirect method=\"POST\">https://hook.us2.make.com/gosceetpq4fc1guv4xf5yb5d5xmq3toy?Mode=Menu&amp;PreviousStatus={{encodeURL(ifempty(1.PreviousStatus; \"\"))}}&amp;From={{encodeURL(ifempty(1.From; \"\"))}}&amp;To={{encodeURL(ifempty(1.To; \"\"))}}&amp;CallSid={{encodeURL(ifempty(1.CallSid; \"\"))}}&amp;AccountSid={{encodeURL(ifempty(1.AccountSid; \"\"))}}&amp;CallStatus={{encodeURL(ifempty(1.CallStatus; \"\"))}}&amp;ApiVersion={{encodeURL(ifempty(1.ApiVersion; \"\"))}}&amp;Direction={{encodeURL(ifempty(1.Direction; \"\"))}}&amp;WorkerID={{encodeURL(ifempty(1.WorkerID; \"\"))}}&amp;SiteRow={{encodeURL(ifempty(1.SiteRow; \"\"))}}&amp;SiteName={{encodeURL(ifempty(1.SiteName; \"\"))}}&amp;Language={{encodeURL(ifempty(1.Language; \"en-US\"))}}&amp;CallLogID={{encodeURL(ifempty(1.CallLogID; ifempty(1.CallSid; \"\")))}}&amp;ReportType={{encodeURL(ifempty(1.ReportType; \"\"))}}&amp;Severity={{encodeURL(ifempty(1.Severity; \"\"))}}&amp;Digits={{encodeURL(ifempty(1.Digits; \"\"))}}&amp;SpeechResult={{encodeURL(ifempty(1.SpeechResult; \"\"))}}&amp;Confidence={{encodeURL(ifempty(1.Confidence; \"\"))}}&amp;RecordingUrl={{encodeURL(ifempty(1.RecordingUrl; \"\"))}}&amp;RecordingSid={{encodeURL(ifempty(1.RecordingSid; \"\"))}}&amp;RecordingDuration={{encodeURL(ifempty(1.RecordingDuration; \"\"))}}&amp;RecordingStatus={{encodeURL(ifempty(1.RecordingStatus; \"\"))}}&amp;Attempt_Number={{encodeURL(ifempty(1.Attempt_Number; \"\"))}}&amp;AmdStatus={{encodeURL(ifempty(1.AmdStatus; \"\"))}}</Redirect>{{newline}}</Response>",
+                                "status": "200",
+                                "headers": []
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 600,
+                                    "y": 0,
+                                    "name": "TwiML — Initial Greeting"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "headers": {
+                                            "mode": "chose"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "status",
+                                        "type": "uinteger",
+                                        "label": "Status",
+                                        "required": true,
+                                        "validate": {
+                                            "min": 100
+                                        }
+                                    },
+                                    {
+                                        "name": "body",
+                                        "type": "any",
+                                        "label": "Body"
+                                    },
+                                    {
+                                        "name": "headers",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 256
+                                                }
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 4096
+                                                }
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Custom headers",
+                                        "validate": {
+                                            "maxItems": 16
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 11,
+                            "module": "gateway:WebhookRespond",
+                            "version": 1,
+                            "parameters": {},
+                            "filter": {
+                                "name": "Mode=LangSelect",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{1.Mode}}",
+                                            "b": "LangSelect",
+                                            "o": "text:equal:ci"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "status": "200",
+                                "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>{{newline}}<Response>{{newline}}\n  <Redirect method=\"POST\">https://hook.us2.make.com/gosceetpq4fc1guv4xf5yb5d5xmq3toy?Mode=Menu&amp;PreviousStatus={{encodeURL(ifempty(1.PreviousStatus; \"\"))}}&amp;Language={{switch(ifempty(1.Language; \"en-US\"); \"es-US\"; \"en-US\"; \"en-US\"; \"es-US\"; \"en-US\")}}&amp;From={{encodeURL(ifempty(1.From; \"\"))}}&amp;To={{encodeURL(ifempty(1.To; \"\"))}}&amp;CallSid={{encodeURL(ifempty(1.CallSid; \"\"))}}&amp;AccountSid={{encodeURL(ifempty(1.AccountSid; \"\"))}}&amp;CallStatus={{encodeURL(ifempty(1.CallStatus; \"\"))}}&amp;ApiVersion={{encodeURL(ifempty(1.ApiVersion; \"\"))}}&amp;Direction={{encodeURL(ifempty(1.Direction; \"\"))}}&amp;WorkerID={{encodeURL(ifempty(1.WorkerID; \"\"))}}&amp;SiteRow={{encodeURL(ifempty(1.SiteRow; \"\"))}}&amp;SiteName={{encodeURL(ifempty(1.SiteName; \"\"))}}&amp;CallLogID={{encodeURL(ifempty(1.CallLogID; ifempty(1.CallSid; \"\")))}}&amp;ReportType={{encodeURL(ifempty(1.ReportType; \"\"))}}&amp;Severity={{encodeURL(ifempty(1.Severity; \"\"))}}&amp;Digits={{encodeURL(ifempty(1.Digits; \"\"))}}&amp;SpeechResult={{encodeURL(ifempty(1.SpeechResult; \"\"))}}&amp;Confidence={{encodeURL(ifempty(1.Confidence; \"\"))}}&amp;RecordingUrl={{encodeURL(ifempty(1.RecordingUrl; \"\"))}}&amp;RecordingSid={{encodeURL(ifempty(1.RecordingSid; \"\"))}}&amp;RecordingDuration={{encodeURL(ifempty(1.RecordingDuration; \"\"))}}&amp;RecordingStatus={{encodeURL(ifempty(1.RecordingStatus; \"\"))}}&amp;Attempt_Number={{encodeURL(ifempty(1.Attempt_Number; \"\"))}}&amp;AmdStatus={{encodeURL(ifempty(1.AmdStatus; \"\"))}}</Redirect>{{newline}}</Response>",
+                                "headers": []
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 600,
+                                    "y": 300,
+                                    "name": "TwiML — Toggle Language"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "headers": {
+                                            "mode": "chose"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "status",
+                                        "type": "uinteger",
+                                        "label": "Status",
+                                        "validate": {
+                                            "min": 100
+                                        },
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "body",
+                                        "type": "any",
+                                        "label": "Body"
+                                    },
+                                    {
+                                        "name": "headers",
+                                        "type": "array",
+                                        "label": "Custom headers",
+                                        "validate": {
+                                            "maxItems": 16
+                                        },
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "label": "Key",
+                                                "type": "text",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 256
+                                                }
+                                            },
+                                            {
+                                                "name": "value",
+                                                "label": "Value",
+                                                "type": "text",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 4096
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 12,
+                            "module": "gateway:WebhookRespond",
+                            "version": 1,
+                            "parameters": {},
+                            "filter": {
+                                "name": "Mode=Menu",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{1.Mode}}",
+                                            "b": "Menu",
+                                            "o": "text:equal:ci"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>{{newline}}<Response>{{newline}}\n  <Gather numDigits=\"1\" timeout=\"7\" method=\"POST\" action=\"https://hook.us2.make.com/gosceetpq4fc1guv4xf5yb5d5xmq3toy?Mode=MenuDispatch&amp;PreviousStatus={{encodeURL(ifempty(1.PreviousStatus; \"\"))}}&amp;From={{encodeURL(ifempty(1.From; \"\"))}}&amp;To={{encodeURL(ifempty(1.To; \"\"))}}&amp;CallSid={{encodeURL(ifempty(1.CallSid; \"\"))}}&amp;AccountSid={{encodeURL(ifempty(1.AccountSid; \"\"))}}&amp;CallStatus={{encodeURL(ifempty(1.CallStatus; \"\"))}}&amp;ApiVersion={{encodeURL(ifempty(1.ApiVersion; \"\"))}}&amp;Direction={{encodeURL(ifempty(1.Direction; \"\"))}}&amp;WorkerID={{encodeURL(ifempty(1.WorkerID; \"\"))}}&amp;SiteRow={{encodeURL(ifempty(1.SiteRow; \"\"))}}&amp;SiteName={{encodeURL(ifempty(1.SiteName; \"\"))}}&amp;Language={{encodeURL(ifempty(1.Language; \"en-US\"))}}&amp;CallLogID={{encodeURL(ifempty(1.CallLogID; ifempty(1.CallSid; \"\")))}}&amp;ReportType={{encodeURL(ifempty(1.ReportType; \"\"))}}&amp;Severity={{encodeURL(ifempty(1.Severity; \"\"))}}\">\n    <Say voice=\"{{if(contains(ifempty(1.Language; \"en-US\"); \"es\"); \"Polly.Mia\"; \"Polly.Matthew\")}}\" language=\"{{ifempty(1.Language; \"en-US\")}}\">{{if(contains(ifempty(1.Language; \"en-US\"); \"es\"); \"Oprima 1 para reporte. Oprima 2 para urgente. Oprima 4 para fallas mecánicas. Oprima 0 para nota general. Oprima 9 para cambiar idioma.\"; \"Press 1 to report. Press 2 for urgent. Press 4 for mechanical failure. Press 0 for a general note. Press 9 to change language.\")}}</Say>\n  </Gather>{{newline}}\n  <Redirect method=\"POST\">https://hook.us2.make.com/gosceetpq4fc1guv4xf5yb5d5xmq3toy?Mode=MenuDispatch&amp;Digits=timeout&amp;PreviousStatus={{encodeURL(ifempty(1.PreviousStatus; \"\"))}}&amp;From={{encodeURL(ifempty(1.From; \"\"))}}&amp;To={{encodeURL(ifempty(1.To; \"\"))}}&amp;CallSid={{encodeURL(ifempty(1.CallSid; \"\"))}}&amp;AccountSid={{encodeURL(ifempty(1.AccountSid; \"\"))}}&amp;CallStatus={{encodeURL(ifempty(1.CallStatus; \"\"))}}&amp;ApiVersion={{encodeURL(ifempty(1.ApiVersion; \"\"))}}&amp;Direction={{encodeURL(ifempty(1.Direction; \"\"))}}&amp;WorkerID={{encodeURL(ifempty(1.WorkerID; \"\"))}}&amp;SiteRow={{encodeURL(ifempty(1.SiteRow; \"\"))}}&amp;SiteName={{encodeURL(ifempty(1.SiteName; \"\"))}}&amp;Language={{encodeURL(ifempty(1.Language; \"en-US\"))}}&amp;CallLogID={{encodeURL(ifempty(1.CallLogID; ifempty(1.CallSid; \"\")))}}&amp;ReportType={{encodeURL(ifempty(1.ReportType; \"\"))}}&amp;Severity={{encodeURL(ifempty(1.Severity; \"\"))}}</Redirect>{{newline}}</Response>",
+                                "status": "200",
+                                "headers": []
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 600,
+                                    "y": 600,
+                                    "name": "TwiML — Menu Options"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "headers": {
+                                            "mode": "chose"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "status",
+                                        "type": "uinteger",
+                                        "label": "Status",
+                                        "required": true,
+                                        "validate": {
+                                            "min": 100
+                                        }
+                                    },
+                                    {
+                                        "name": "body",
+                                        "type": "any",
+                                        "label": "Body"
+                                    },
+                                    {
+                                        "name": "headers",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 256
+                                                }
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 4096
+                                                }
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Custom headers",
+                                        "validate": {
+                                            "maxItems": 16
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 13,
+                            "module": "gateway:WebhookRespond",
+                            "version": 1,
+                            "parameters": {},
+                            "filter": {
+                                "name": "Mode=MenuDispatch",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{1.Mode}}",
+                                            "b": "MenuDispatch",
+                                            "o": "text:equal:ci"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>{{newline}}<Response>{{newline}}\n  <Redirect method=\"POST\">https://hook.us2.make.com/gosceetpq4fc1guv4xf5yb5d5xmq3toy?Mode={{switch(ifempty(1.Digits; \"timeout\"); \"\"; \"Severity\"; \"\"; \"Urgent\"; \"\"; \"Mechanical\"; \"\"; \"General\"; \"\"; \"LangSelect\"; \"Menu\")}}&amp;ReportType={{switch(ifempty(1.Digits; \"timeout\"); \"\"; \"Report\"; \"\"; \"Report\"; \"\"; \"Mechanical\"; \"\"; \"GeneralNote\"; ifempty(1.ReportType; \"\"))}}&amp;Severity={{switch(ifempty(1.Digits; \"timeout\"); \"\"; \"Urgent\"; ifempty(1.Severity; \"\"))}}&amp;Digits={{encodeURL(ifempty(1.Digits; \"\"))}}&amp;PreviousStatus={{encodeURL(ifempty(1.PreviousStatus; \"\"))}}&amp;From={{encodeURL(ifempty(1.From; \"\"))}}&amp;To={{encodeURL(ifempty(1.To; \"\"))}}&amp;CallSid={{encodeURL(ifempty(1.CallSid; \"\"))}}&amp;AccountSid={{encodeURL(ifempty(1.AccountSid; \"\"))}}&amp;CallStatus={{encodeURL(ifempty(1.CallStatus; \"\"))}}&amp;ApiVersion={{encodeURL(ifempty(1.ApiVersion; \"\"))}}&amp;Direction={{encodeURL(ifempty(1.Direction; \"\"))}}&amp;WorkerID={{encodeURL(ifempty(1.WorkerID; \"\"))}}&amp;SiteRow={{encodeURL(ifempty(1.SiteRow; \"\"))}}&amp;SiteName={{encodeURL(ifempty(1.SiteName; \"\"))}}&amp;Language={{encodeURL(ifempty(1.Language; \"en-US\"))}}&amp;CallLogID={{encodeURL(ifempty(1.CallLogID; ifempty(1.CallSid; \"\")))}}</Redirect>{{newline}}</Response>",
+                                "status": "200",
+                                "headers": []
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 600,
+                                    "y": 900,
+                                    "name": "TwiML — Menu Dispatch"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "headers": {
+                                            "mode": "chose"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "status",
+                                        "type": "uinteger",
+                                        "label": "Status",
+                                        "required": true,
+                                        "validate": {
+                                            "min": 100
+                                        }
+                                    },
+                                    {
+                                        "name": "body",
+                                        "type": "any",
+                                        "label": "Body"
+                                    },
+                                    {
+                                        "name": "headers",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 256
+                                                }
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 4096
+                                                }
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Custom headers",
+                                        "validate": {
+                                            "maxItems": 16
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 14,
+                            "module": "gateway:WebhookRespond",
+                            "version": 1,
+                            "parameters": {},
+                            "filter": {
+                                "name": "Mode=Severity OR ScheduledDialer",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{1.Mode}}",
+                                            "b": "Severity",
+                                            "o": "text:equal:ci"
+                                        }
+                                    ],
+                                    [
+                                        {
+                                            "a": "{{1.Mode}}",
+                                            "b": "ScheduledDialer",
+                                            "o": "text:equal:ci"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>{{newline}}<Response>{{newline}}\n  <Gather numDigits=\"1\" timeout=\"7\" method=\"POST\" action=\"https://hook.us2.make.com/gosceetpq4fc1guv4xf5yb5d5xmq3toy?Mode=SeveritySet&amp;PreviousStatus={{encodeURL(ifempty(1.PreviousStatus; \"\"))}}&amp;From={{encodeURL(ifempty(1.From; \"\"))}}&amp;To={{encodeURL(ifempty(1.To; \"\"))}}&amp;CallSid={{encodeURL(ifempty(1.CallSid; \"\"))}}&amp;AccountSid={{encodeURL(ifempty(1.AccountSid; \"\"))}}&amp;CallStatus={{encodeURL(ifempty(1.CallStatus; \"\"))}}&amp;ApiVersion={{encodeURL(ifempty(1.ApiVersion; \"\"))}}&amp;Direction={{encodeURL(ifempty(1.Direction; \"\"))}}&amp;WorkerID={{encodeURL(ifempty(1.WorkerID; \"\"))}}&amp;SiteRow={{encodeURL(ifempty(1.SiteRow; \"\"))}}&amp;SiteName={{encodeURL(ifempty(1.SiteName; \"\"))}}&amp;Language={{encodeURL(ifempty(1.Language; \"en-US\"))}}&amp;CallLogID={{encodeURL(ifempty(1.CallLogID; ifempty(1.CallSid; \"\")))}}&amp;ReportType={{encodeURL(ifempty(1.ReportType; \"\"))}}&amp;Severity={{encodeURL(ifempty(1.Severity; \"\"))}}\">\n    <Say voice=\"{{if(contains(ifempty(1.Language; \"en-US\"); \"es\"); \"Polly.Mia\"; \"Polly.Matthew\")}}\" language=\"{{ifempty(1.Language; \"en-US\")}}\">{{if(contains(ifempty(1.Language; \"en-US\"); \"es\"); \"Para prioridad: oprima 1 normal, 2 urgente, 3 emergencia. Oprima 9 para cambiar idioma.\"; \"For priority: press 1 normal, 2 urgent, 3 emergency. Press 9 to change language.\")}}</Say>\n  </Gather>{{newline}}\n  <Redirect method=\"POST\">https://hook.us2.make.com/gosceetpq4fc1guv4xf5yb5d5xmq3toy?Mode=SeveritySet&amp;Digits=timeout&amp;PreviousStatus={{encodeURL(ifempty(1.PreviousStatus; \"\"))}}&amp;From={{encodeURL(ifempty(1.From; \"\"))}}&amp;To={{encodeURL(ifempty(1.To; \"\"))}}&amp;CallSid={{encodeURL(ifempty(1.CallSid; \"\"))}}&amp;AccountSid={{encodeURL(ifempty(1.AccountSid; \"\"))}}&amp;CallStatus={{encodeURL(ifempty(1.CallStatus; \"\"))}}&amp;ApiVersion={{encodeURL(ifempty(1.ApiVersion; \"\"))}}&amp;Direction={{encodeURL(ifempty(1.Direction; \"\"))}}&amp;WorkerID={{encodeURL(ifempty(1.WorkerID; \"\"))}}&amp;SiteRow={{encodeURL(ifempty(1.SiteRow; \"\"))}}&amp;SiteName={{encodeURL(ifempty(1.SiteName; \"\"))}}&amp;Language={{encodeURL(ifempty(1.Language; \"en-US\"))}}&amp;CallLogID={{encodeURL(ifempty(1.CallLogID; ifempty(1.CallSid; \"\")))}}&amp;ReportType={{encodeURL(ifempty(1.ReportType; \"\"))}}&amp;Severity={{encodeURL(ifempty(1.Severity; \"\"))}}</Redirect>{{newline}}</Response>",
+                                "status": "200",
+                                "headers": []
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 600,
+                                    "y": 1200,
+                                    "name": "TwiML — Severity Selection"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "headers": {
+                                            "mode": "chose"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "status",
+                                        "type": "uinteger",
+                                        "label": "Status",
+                                        "required": true,
+                                        "validate": {
+                                            "min": 100
+                                        }
+                                    },
+                                    {
+                                        "name": "body",
+                                        "type": "any",
+                                        "label": "Body"
+                                    },
+                                    {
+                                        "name": "headers",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 256
+                                                }
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 4096
+                                                }
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Custom headers",
+                                        "validate": {
+                                            "maxItems": 16
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 15,
+                            "module": "gateway:WebhookRespond",
+                            "version": 1,
+                            "parameters": {},
+                            "filter": {
+                                "name": "Mode=SeveritySet",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{1.Mode}}",
+                                            "b": "SeveritySet",
+                                            "o": "text:equal:ci"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>{{newline}}<Response>{{newline}}\n  <Redirect method=\"POST\">https://hook.us2.make.com/gosceetpq4fc1guv4xf5yb5d5xmq3toy?Mode={{switch(ifempty(1.Digits; \"timeout\"); \"\"; \"LangSelect\"; \"Record\")}}&amp;Severity={{switch(ifempty(1.Digits; \"timeout\"); \"\"; \"Normal\"; \"\"; \"Urgent\"; \"\"; \"Emergency\"; ifempty(1.Severity; \"Normal\"))}}&amp;PreviousStatus={{encodeURL(ifempty(1.PreviousStatus; \"\"))}}&amp;From={{encodeURL(ifempty(1.From; \"\"))}}&amp;To={{encodeURL(ifempty(1.To; \"\"))}}&amp;CallSid={{encodeURL(ifempty(1.CallSid; \"\"))}}&amp;AccountSid={{encodeURL(ifempty(1.AccountSid; \"\"))}}&amp;CallStatus={{encodeURL(ifempty(1.CallStatus; \"\"))}}&amp;ApiVersion={{encodeURL(ifempty(1.ApiVersion; \"\"))}}&amp;Direction={{encodeURL(ifempty(1.Direction; \"\"))}}&amp;WorkerID={{encodeURL(ifempty(1.WorkerID; \"\"))}}&amp;SiteRow={{encodeURL(ifempty(1.SiteRow; \"\"))}}&amp;SiteName={{encodeURL(ifempty(1.SiteName; \"\"))}}&amp;Language={{encodeURL(ifempty(1.Language; \"en-US\"))}}&amp;CallLogID={{encodeURL(ifempty(1.CallLogID; ifempty(1.CallSid; \"\")))}}&amp;ReportType={{encodeURL(ifempty(1.ReportType; \"\"))}}&amp;Digits={{encodeURL(ifempty(1.Digits; \"\"))}}</Redirect>{{newline}}</Response>",
+                                "status": "200",
+                                "headers": []
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 600,
+                                    "y": 1500,
+                                    "name": "TwiML — Set Severity -> Record"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "headers": {
+                                            "mode": "chose"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "status",
+                                        "type": "uinteger",
+                                        "label": "Status",
+                                        "required": true,
+                                        "validate": {
+                                            "min": 100
+                                        }
+                                    },
+                                    {
+                                        "name": "body",
+                                        "type": "any",
+                                        "label": "Body"
+                                    },
+                                    {
+                                        "name": "headers",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 256
+                                                }
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 4096
+                                                }
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Custom headers",
+                                        "validate": {
+                                            "maxItems": 16
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 16,
+                            "module": "gateway:WebhookRespond",
+                            "version": 1,
+                            "parameters": {},
+                            "filter": {
+                                "name": "Mode=Record OR General OR Urgent",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{1.Mode}}",
+                                            "b": "Record",
+                                            "o": "text:equal:ci"
+                                        }
+                                    ],
+                                    [
+                                        {
+                                            "a": "{{1.Mode}}",
+                                            "b": "General",
+                                            "o": "text:equal:ci"
+                                        }
+                                    ],
+                                    [
+                                        {
+                                            "a": "{{1.Mode}}",
+                                            "b": "Urgent",
+                                            "o": "text:equal:ci"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>{{newline}}<Response>{{newline}}\n  <Say voice=\"{{if(contains(ifempty(1.Language; \"en-US\"); \"es\"); \"Polly.Mia\"; \"Polly.Matthew\")}}\" language=\"{{ifempty(1.Language; \"en-US\")}}\">{{if(contains(ifempty(1.Language; \"en-US\"); \"es\"); \"Grabe su reporte después del tono. Cuando termine, cuelgue o presione numeral.\"; \"Record your report after the beep. When finished, hang up or press pound.\")}}</Say>{{newline}}\n  <Record playBeep=\"true\" finishOnKey=\"#\" maxLength=\"180\" timeout=\"5\" method=\"POST\" action=\"https://hook.us2.make.com/gosceetpq4fc1guv4xf5yb5d5xmq3toy?Mode=RecordDone&amp;PreviousStatus={{encodeURL(ifempty(1.PreviousStatus; \"\"))}}&amp;From={{encodeURL(ifempty(1.From; \"\"))}}&amp;To={{encodeURL(ifempty(1.To; \"\"))}}&amp;CallSid={{encodeURL(ifempty(1.CallSid; \"\"))}}&amp;AccountSid={{encodeURL(ifempty(1.AccountSid; \"\"))}}&amp;CallStatus={{encodeURL(ifempty(1.CallStatus; \"\"))}}&amp;ApiVersion={{encodeURL(ifempty(1.ApiVersion; \"\"))}}&amp;Direction={{encodeURL(ifempty(1.Direction; \"\"))}}&amp;WorkerID={{encodeURL(ifempty(1.WorkerID; \"\"))}}&amp;SiteRow={{encodeURL(ifempty(1.SiteRow; \"\"))}}&amp;SiteName={{encodeURL(ifempty(1.SiteName; \"\"))}}&amp;Language={{encodeURL(ifempty(1.Language; \"en-US\"))}}&amp;CallLogID={{encodeURL(ifempty(1.CallLogID; ifempty(1.CallSid; \"\")))}}&amp;ReportType={{encodeURL(ifempty(1.ReportType; \"\"))}}&amp;Severity={{encodeURL(ifempty(1.Severity; \"\"))}}\" recordingStatusCallback=\"https://hook.us2.make.com/s9ql49qr4odm13e85ul77i6bmbwp9bpb?PreviousStatus={{encodeURL(ifempty(1.PreviousStatus; \"\"))}}&amp;From={{encodeURL(ifempty(1.From; \"\"))}}&amp;To={{encodeURL(ifempty(1.To; \"\"))}}&amp;CallSid={{encodeURL(ifempty(1.CallSid; \"\"))}}&amp;AccountSid={{encodeURL(ifempty(1.AccountSid; \"\"))}}&amp;CallStatus={{encodeURL(ifempty(1.CallStatus; \"\"))}}&amp;ApiVersion={{encodeURL(ifempty(1.ApiVersion; \"\"))}}&amp;Direction={{encodeURL(ifempty(1.Direction; \"\"))}}&amp;WorkerID={{encodeURL(ifempty(1.WorkerID; \"\"))}}&amp;SiteRow={{encodeURL(ifempty(1.SiteRow; \"\"))}}&amp;SiteName={{encodeURL(ifempty(1.SiteName; \"\"))}}&amp;Language={{encodeURL(ifempty(1.Language; \"en-US\"))}}&amp;CallLogID={{encodeURL(ifempty(1.CallLogID; ifempty(1.CallSid; \"\")))}}&amp;ReportType={{encodeURL(ifempty(1.ReportType; \"\"))}}&amp;Severity={{encodeURL(ifempty(1.Severity; \"\"))}}\" recordingStatusCallbackMethod=\"POST\" />{{newline}}\n</Response>",
+                                "status": "200",
+                                "headers": []
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 600,
+                                    "y": 1800,
+                                    "name": "TwiML — Record Audio"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "headers": {
+                                            "mode": "chose"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "status",
+                                        "type": "uinteger",
+                                        "label": "Status",
+                                        "required": true,
+                                        "validate": {
+                                            "min": 100
+                                        }
+                                    },
+                                    {
+                                        "name": "body",
+                                        "type": "any",
+                                        "label": "Body"
+                                    },
+                                    {
+                                        "name": "headers",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 256
+                                                }
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 4096
+                                                }
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Custom headers",
+                                        "validate": {
+                                            "maxItems": 16
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 18,
+                            "module": "gateway:WebhookRespond",
+                            "version": 1,
+                            "parameters": {},
+                            "filter": {
+                                "name": "Mode=Mechanical",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{1.Mode}}",
+                                            "b": "Mechanical",
+                                            "o": "text:equal:ci"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>{{newline}}<Response>{{newline}}\n  <Say voice=\"{{if(contains(ifempty(1.Language; \"en-US\"); \"es\"); \"Polly.Mia\"; \"Polly.Matthew\")}}\" language=\"{{ifempty(1.Language; \"en-US\")}}\">{{if(contains(ifempty(1.Language; \"en-US\"); \"es\"); \"Por favor describa el problema mecánico y su ubicación después del tono. Cuando termine, cuelgue o presione numeral.\"; \"Please describe the mechanical issue and your location after the beep. When finished, hang up or press pound.\")}}</Say>{{newline}}\n  <Record playBeep=\"true\" finishOnKey=\"#\" maxLength=\"180\" timeout=\"5\" method=\"POST\" action=\"https://hook.us2.make.com/gosceetpq4fc1guv4xf5yb5d5xmq3toy?Mode=RecordDone&amp;ReportType=Mechanical&amp;PreviousStatus={{encodeURL(ifempty(1.PreviousStatus; \"\"))}}&amp;From={{encodeURL(ifempty(1.From; \"\"))}}&amp;To={{encodeURL(ifempty(1.To; \"\"))}}&amp;CallSid={{encodeURL(ifempty(1.CallSid; \"\"))}}&amp;AccountSid={{encodeURL(ifempty(1.AccountSid; \"\"))}}&amp;CallStatus={{encodeURL(ifempty(1.CallStatus; \"\"))}}&amp;ApiVersion={{encodeURL(ifempty(1.ApiVersion; \"\"))}}&amp;Direction={{encodeURL(ifempty(1.Direction; \"\"))}}&amp;WorkerID={{encodeURL(ifempty(1.WorkerID; \"\"))}}&amp;SiteRow={{encodeURL(ifempty(1.SiteRow; \"\"))}}&amp;SiteName={{encodeURL(ifempty(1.SiteName; \"\"))}}&amp;Language={{encodeURL(ifempty(1.Language; \"en-US\"))}}&amp;CallLogID={{encodeURL(ifempty(1.CallLogID; ifempty(1.CallSid; \"\")))}}&amp;Severity={{encodeURL(ifempty(1.Severity; \"\"))}}\" recordingStatusCallback=\"https://hook.us2.make.com/s9ql49qr4odm13e85ul77i6bmbwp9bpb?ReportType=Mechanical&amp;PreviousStatus={{encodeURL(ifempty(1.PreviousStatus; \"\"))}}&amp;From={{encodeURL(ifempty(1.From; \"\"))}}&amp;To={{encodeURL(ifempty(1.To; \"\"))}}&amp;CallSid={{encodeURL(ifempty(1.CallSid; \"\"))}}&amp;AccountSid={{encodeURL(ifempty(1.AccountSid; \"\"))}}&amp;CallStatus={{encodeURL(ifempty(1.CallStatus; \"\"))}}&amp;ApiVersion={{encodeURL(ifempty(1.ApiVersion; \"\"))}}&amp;Direction={{encodeURL(ifempty(1.Direction; \"\"))}}&amp;WorkerID={{encodeURL(ifempty(1.WorkerID; \"\"))}}&amp;SiteRow={{encodeURL(ifempty(1.SiteRow; \"\"))}}&amp;SiteName={{encodeURL(ifempty(1.SiteName; \"\"))}}&amp;Language={{encodeURL(ifempty(1.Language; \"en-US\"))}}&amp;CallLogID={{encodeURL(ifempty(1.CallLogID; ifempty(1.CallSid; \"\")))}}&amp;Severity={{encodeURL(ifempty(1.Severity; \"\"))}}\" recordingStatusCallbackMethod=\"POST\" />{{newline}}\n</Response>",
+                                "status": "200",
+                                "headers": []
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 600,
+                                    "y": 2100,
+                                    "name": "TwiML — Record Mechanical"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "headers": {
+                                            "mode": "chose"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "status",
+                                        "type": "uinteger",
+                                        "label": "Status",
+                                        "required": true,
+                                        "validate": {
+                                            "min": 100
+                                        }
+                                    },
+                                    {
+                                        "name": "body",
+                                        "type": "any",
+                                        "label": "Body"
+                                    },
+                                    {
+                                        "name": "headers",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 256
+                                                }
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 4096
+                                                }
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Custom headers",
+                                        "validate": {
+                                            "maxItems": 16
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 17,
+                            "module": "gateway:WebhookRespond",
+                            "version": 1,
+                            "parameters": {},
+                            "filter": {
+                                "name": "Mode=RecordDone",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{1.Mode}}",
+                                            "b": "RecordDone",
+                                            "o": "text:equal:ci"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>{{newline}}<Response>{{newline}}\n  <Say voice=\"{{if(contains(ifempty(1.Language; \"en-US\"); \"es\"); \"Polly.Mia\"; \"Polly.Matthew\")}}\" language=\"{{ifempty(1.Language; \"en-US\")}}\">{{if(contains(ifempty(1.Language; \"en-US\"); \"es\"); \"Aquí está su mensaje.\"; \"Here is your message.\")}}</Say>{{newline}}\n  <Play>{{1.RecordingUrl}}</Play>{{newline}}\n  <Gather numDigits=\"1\" timeout=\"7\" method=\"POST\" action=\"https://hook.us2.make.com/gosceetpq4fc1guv4xf5yb5d5xmq3toy?Mode=FinalizeReport&amp;PreviousStatus={{encodeURL(ifempty(1.PreviousStatus; \"\"))}}&amp;From={{encodeURL(ifempty(1.From; \"\"))}}&amp;To={{encodeURL(ifempty(1.To; \"\"))}}&amp;CallSid={{encodeURL(ifempty(1.CallSid; \"\"))}}&amp;AccountSid={{encodeURL(ifempty(1.AccountSid; \"\"))}}&amp;CallStatus={{encodeURL(ifempty(1.CallStatus; \"\"))}}&amp;ApiVersion={{encodeURL(ifempty(1.ApiVersion; \"\"))}}&amp;Direction={{encodeURL(ifempty(1.Direction; \"\"))}}&amp;WorkerID={{encodeURL(ifempty(1.WorkerID; \"\"))}}&amp;SiteRow={{encodeURL(ifempty(1.SiteRow; \"\"))}}&amp;SiteName={{encodeURL(ifempty(1.SiteName; \"\"))}}&amp;Language={{encodeURL(ifempty(1.Language; \"en-US\"))}}&amp;CallLogID={{encodeURL(ifempty(1.CallLogID; ifempty(1.CallSid; \"\")))}}&amp;ReportType={{encodeURL(ifempty(1.ReportType; \"\"))}}&amp;Severity={{encodeURL(ifempty(1.Severity; \"\"))}}&amp;RecordingUrl={{encodeURL(ifempty(1.RecordingUrl; \"\"))}}\">\n    <Say voice=\"{{if(contains(ifempty(1.Language; \"en-US\"); \"es\"); \"Polly.Mia\"; \"Polly.Matthew\")}}\" language=\"{{ifempty(1.Language; \"en-US\")}}\">{{if(contains(ifempty(1.Language; \"en-US\"); \"es\"); \"Oprima 1 para enviar. Oprima 3 para grabar de nuevo.\"; \"Press 1 to submit. Press 3 to re-record.\")}}</Say>{{newline}}\n  </Gather>{{newline}}\n  <Redirect method=\"POST\">https://hook.us2.make.com/gosceetpq4fc1guv4xf5yb5d5xmq3toy?Mode=FinalizeReport&amp;Digits=timeout&amp;PreviousStatus={{encodeURL(ifempty(1.PreviousStatus; \"\"))}}&amp;From={{encodeURL(ifempty(1.From; \"\"))}}&amp;To={{encodeURL(ifempty(1.To; \"\"))}}&amp;CallSid={{encodeURL(ifempty(1.CallSid; \"\"))}}&amp;AccountSid={{encodeURL(ifempty(1.AccountSid; \"\"))}}&amp;CallStatus={{encodeURL(ifempty(1.CallStatus; \"\"))}}&amp;ApiVersion={{encodeURL(ifempty(1.ApiVersion; \"\"))}}&amp;Direction={{encodeURL(ifempty(1.Direction; \"\"))}}&amp;WorkerID={{encodeURL(ifempty(1.WorkerID; \"\"))}}&amp;SiteRow={{encodeURL(ifempty(1.SiteRow; \"\"))}}&amp;SiteName={{encodeURL(ifempty(1.SiteName; \"\"))}}&amp;Language={{encodeURL(ifempty(1.Language; \"en-US\"))}}&amp;CallLogID={{encodeURL(ifempty(1.CallLogID; ifempty(1.CallSid; \"\")))}}&amp;ReportType={{encodeURL(ifempty(1.ReportType; \"\"))}}&amp;Severity={{encodeURL(ifempty(1.Severity; \"\"))}}&amp;RecordingUrl={{encodeURL(ifempty(1.RecordingUrl; \"\"))}}</Redirect>{{newline}}\n</Response>",
+                                "status": "200",
+                                "headers": []
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 600,
+                                    "y": 2400,
+                                    "name": "TwiML — Review Loop (Play+Gather)"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "headers": {
+                                            "mode": "chose"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "status",
+                                        "type": "uinteger",
+                                        "label": "Status",
+                                        "required": true,
+                                        "validate": {
+                                            "min": 100
+                                        }
+                                    },
+                                    {
+                                        "name": "body",
+                                        "type": "any",
+                                        "label": "Body"
+                                    },
+                                    {
+                                        "name": "headers",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 256
+                                                }
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 4096
+                                                }
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Custom headers",
+                                        "validate": {
+                                            "maxItems": 16
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 19,
+                            "module": "gateway:WebhookRespond",
+                            "version": 1,
+                            "parameters": {},
+                            "filter": {
+                                "name": "Mode=FinalizeReport (Re-record)",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{1.Mode}}",
+                                            "b": "FinalizeReport",
+                                            "o": "text:equal:ci"
+                                        },
+                                        {
+                                            "a": "{{1.Digits}}",
+                                            "b": "3",
+                                            "o": "text:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>{{newline}}<Response>{{newline}}\n  <Redirect method=\"POST\">https://hook.us2.make.com/gosceetpq4fc1guv4xf5yb5d5xmq3toy?Mode={{if(ifempty(1.ReportType; \"\") = \"Mechanical\"; \"Mechanical\"; \"Record\")}}&amp;PreviousStatus={{encodeURL(ifempty(1.PreviousStatus; \"\"))}}&amp;From={{encodeURL(ifempty(1.From; \"\"))}}&amp;To={{encodeURL(ifempty(1.To; \"\"))}}&amp;CallSid={{encodeURL(ifempty(1.CallSid; \"\"))}}&amp;AccountSid={{encodeURL(ifempty(1.AccountSid; \"\"))}}&amp;CallStatus={{encodeURL(ifempty(1.CallStatus; \"\"))}}&amp;ApiVersion={{encodeURL(ifempty(1.ApiVersion; \"\"))}}&amp;Direction={{encodeURL(ifempty(1.Direction; \"\"))}}&amp;WorkerID={{encodeURL(ifempty(1.WorkerID; \"\"))}}&amp;SiteRow={{encodeURL(ifempty(1.SiteRow; \"\"))}}&amp;SiteName={{encodeURL(ifempty(1.SiteName; \"\"))}}&amp;Language={{encodeURL(ifempty(1.Language; \"en-US\"))}}&amp;CallLogID={{encodeURL(ifempty(1.CallLogID; ifempty(1.CallSid; \"\")))}}&amp;ReportType={{encodeURL(ifempty(1.ReportType; \"\"))}}&amp;Severity={{encodeURL(ifempty(1.Severity; \"\"))}}</Redirect>{{newline}}\n</Response>",
+                                "status": "200",
+                                "headers": []
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 600,
+                                    "y": 2700,
+                                    "name": "TwiML — Loop Back to Record (FIXED)"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "headers": {
+                                            "mode": "chose"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "status",
+                                        "type": "uinteger",
+                                        "label": "Status",
+                                        "required": true,
+                                        "validate": {
+                                            "min": 100
+                                        }
+                                    },
+                                    {
+                                        "name": "body",
+                                        "type": "any",
+                                        "label": "Body"
+                                    },
+                                    {
+                                        "name": "headers",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 256
+                                                }
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 4096
+                                                }
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Custom headers",
+                                        "validate": {
+                                            "maxItems": 16
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 20,
+                            "module": "gateway:WebhookRespond",
+                            "version": 1,
+                            "parameters": {},
+                            "filter": {
+                                "name": "Mode=FinalizeReport (Submit)",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{1.Mode}}",
+                                            "b": "FinalizeReport",
+                                            "o": "text:equal:ci"
+                                        },
+                                        {
+                                            "a": "{{1.Digits}}",
+                                            "b": "3",
+                                            "o": "text:notequal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>{{newline}}<Response>{{newline}}\n  <Say voice=\"{{if(contains(ifempty(1.Language; \"en-US\"); \"es\"); \"Polly.Mia\"; \"Polly.Matthew\")}}\" language=\"{{ifempty(1.Language; \"en-US\")}}\">{{if(contains(ifempty(1.Language; \"en-US\"); \"es\"); \"Gracias. Procesando su reporte.\"; \"Thank you. Processing your report.\")}}</Say>{{newline}}\n  <Redirect method=\"POST\">https://hook.us2.make.com/kmtzmc9qhf2nslis9uelj48pnzr7t5u8?PreviousStatus={{encodeURL(ifempty(1.PreviousStatus; \"\"))}}&amp;From={{encodeURL(ifempty(1.From; \"\"))}}&amp;To={{encodeURL(ifempty(1.To; \"\"))}}&amp;CallSid={{encodeURL(ifempty(1.CallSid; \"\"))}}&amp;AccountSid={{encodeURL(ifempty(1.AccountSid; \"\"))}}&amp;CallStatus={{encodeURL(ifempty(1.CallStatus; \"\"))}}&amp;ApiVersion={{encodeURL(ifempty(1.ApiVersion; \"\"))}}&amp;Direction={{encodeURL(ifempty(1.Direction; \"\"))}}&amp;WorkerID={{encodeURL(ifempty(1.WorkerID; \"\"))}}&amp;SiteRow={{encodeURL(ifempty(1.SiteRow; \"\"))}}&amp;SiteName={{encodeURL(ifempty(1.SiteName; \"\"))}}&amp;Language={{encodeURL(ifempty(1.Language; \"en-US\"))}}&amp;CallLogID={{encodeURL(ifempty(1.CallLogID; ifempty(1.CallSid; \"\")))}}&amp;ReportType={{encodeURL(ifempty(1.ReportType; \"\"))}}&amp;Severity={{encodeURL(ifempty(1.Severity; \"\"))}}&amp;RecordingUrl={{encodeURL(ifempty(1.RecordingUrl; \"\"))}}&amp;RecordingSid={{encodeURL(ifempty(1.RecordingSid; \"\"))}}&amp;RecordingDuration={{encodeURL(ifempty(1.RecordingDuration; \"\"))}}&amp;RecordingStatus={{encodeURL(ifempty(1.RecordingStatus; \"\"))}}&amp;Attempt_Number={{encodeURL(ifempty(1.Attempt_Number; \"\"))}}&amp;AmdStatus={{encodeURL(ifempty(1.AmdStatus; \"\"))}}</Redirect>{{newline}}\n</Response>",
+                                "status": "200",
+                                "headers": []
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 600,
+                                    "y": 3000,
+                                    "name": "TwiML — Final Submit (to Scenario 5)"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "headers": {
+                                            "mode": "chose"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "status",
+                                        "type": "uinteger",
+                                        "label": "Status",
+                                        "required": true,
+                                        "validate": {
+                                            "min": 100
+                                        }
+                                    },
+                                    {
+                                        "name": "body",
+                                        "type": "any",
+                                        "label": "Body"
+                                    },
+                                    {
+                                        "name": "headers",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 256
+                                                }
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 4096
+                                                }
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Custom headers",
+                                        "validate": {
+                                            "maxItems": 16
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": true,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "us2.make.com",
+        "notes": []
+    }
+}

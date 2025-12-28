@@ -1,0 +1,1354 @@
+{
+    "name": "3 – Redial Webhook",
+    "flow": [
+        {
+            "id": 1,
+            "module": "gateway:CustomWebHook",
+            "version": 1,
+            "parameters": {
+                "hook": 1669328,
+                "maxResults": 1
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": -141,
+                    "y": 157,
+                    "name": "Redial Webhook (Twilio → Make)"
+                },
+                "restore": {
+                    "parameters": {
+                        "hook": {
+                            "data": {
+                                "editable": "true"
+                            },
+                            "label": "3 - Redial"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "hook",
+                        "type": "hook:gateway-webhook",
+                        "label": "Webhook",
+                        "required": true
+                    },
+                    {
+                        "name": "maxResults",
+                        "type": "number",
+                        "label": "Maximum number of results"
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "From",
+                        "type": "text"
+                    },
+                    {
+                        "name": "To",
+                        "type": "text"
+                    },
+                    {
+                        "name": "CallSid",
+                        "type": "text"
+                    },
+                    {
+                        "name": "ParentCallSid",
+                        "type": "text"
+                    },
+                    {
+                        "name": "AccountSid",
+                        "type": "text"
+                    },
+                    {
+                        "name": "CallStatus",
+                        "type": "text"
+                    },
+                    {
+                        "name": "ApiVersion",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Direction",
+                        "type": "text"
+                    },
+                    {
+                        "name": "CallerName",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Digits",
+                        "type": "text"
+                    },
+                    {
+                        "name": "AmdStatus",
+                        "type": "text"
+                    },
+                    {
+                        "name": "FromCity",
+                        "type": "text"
+                    },
+                    {
+                        "name": "FromState",
+                        "type": "text"
+                    },
+                    {
+                        "name": "FromZip",
+                        "type": "text"
+                    },
+                    {
+                        "name": "FromCountry",
+                        "type": "text"
+                    },
+                    {
+                        "name": "ToCity",
+                        "type": "text"
+                    },
+                    {
+                        "name": "ToState",
+                        "type": "text"
+                    },
+                    {
+                        "name": "ToZip",
+                        "type": "text"
+                    },
+                    {
+                        "name": "ToCountry",
+                        "type": "text"
+                    },
+                    {
+                        "name": "RecordingUrl",
+                        "type": "text"
+                    },
+                    {
+                        "name": "RecordingDuration",
+                        "type": "text"
+                    },
+                    {
+                        "name": "RecordingSid",
+                        "type": "text"
+                    },
+                    {
+                        "name": "RecordingStatus",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Body",
+                        "type": "text"
+                    },
+                    {
+                        "name": "SmsSid",
+                        "type": "text"
+                    },
+                    {
+                        "name": "MessageSid",
+                        "type": "text"
+                    },
+                    {
+                        "name": "NumMedia",
+                        "type": "text"
+                    },
+                    {
+                        "name": "NumSegments",
+                        "type": "text"
+                    },
+                    {
+                        "name": "MediaUrl0",
+                        "type": "text"
+                    },
+                    {
+                        "name": "MediaContentType0",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Mode",
+                        "type": "text"
+                    },
+                    {
+                        "name": "WorkerID",
+                        "type": "text"
+                    },
+                    {
+                        "name": "SiteRow",
+                        "type": "text"
+                    },
+                    {
+                        "name": "SiteName",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Language",
+                        "type": "text"
+                    },
+                    {
+                        "name": "CallLogID",
+                        "type": "text"
+                    },
+                    {
+                        "name": "ReportType",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Severity",
+                        "type": "text"
+                    },
+                    {
+                        "name": "SpeechResult",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Transcript",
+                        "type": "text"
+                    },
+                    {
+                        "name": "AI_Summary",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Confidence",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Attempt_Number",
+                        "type": "text"
+                    },
+                    {
+                        "name": "AttemptNumber",
+                        "type": "text"
+                    },
+                    {
+                        "name": "PreviousStatus",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Completeness",
+                        "type": "text"
+                    },
+                    {
+                        "name": "Category_Detected",
+                        "type": "text"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 2,
+            "module": "util:SetVariables",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "scope": "roundtrip",
+                "variables": [
+                    {
+                        "name": "To_Raw",
+                        "value": "{{trim(toString(ifempty(1.To; ifempty(1.Phone_E164; ifempty(1.To_E164; ifempty(1.Dial_To; ifempty(1.DialTo; \"\")))))))}}"
+                    },
+                    {
+                        "name": "From_E164",
+                        "value": "{{ifempty(1.From; 16317803880)}}"
+                    },
+                    {
+                        "name": "WorkerID",
+                        "value": "{{trim(toString(ifempty(1.WorkerID; ifempty(1.Worker_ID; ifempty(1.WorkerId; \"\")))))}}"
+                    },
+                    {
+                        "name": "Language",
+                        "value": "{{ifempty(1.Language; \"en-US\")}}"
+                    },
+                    {
+                        "name": "Attempt_Raw",
+                        "value": "{{toString(ifempty(1.Attempt_Number; ifempty(1.AttemptNumber; ifempty(1.Attempt; ifempty(1.Attempt_Count; \"\")))))}}"
+                    },
+                    {
+                        "name": "PreviousStatus",
+                        "value": "{{toString(ifempty(1.CallStatus; ifempty(1.Call_Status; \"\")))}}"
+                    }
+                ]
+            },
+            "metadata": {
+                "designer": {
+                    "x": 217,
+                    "y": 681,
+                    "name": "NORMALIZE: inputs (WorkerID/To_Raw)"
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One cycle"
+                        },
+                        "variables": {
+                            "items": [
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null
+                            ]
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "variables",
+                        "spec": [
+                            {
+                                "name": "name",
+                                "type": "text",
+                                "label": "Variable name",
+                                "required": true
+                            },
+                            {
+                                "name": "value",
+                                "type": "any",
+                                "label": "Variable value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Variables"
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "To_Raw",
+                        "type": "any",
+                        "label": "To_Raw"
+                    },
+                    {
+                        "name": "From_E164",
+                        "type": "any",
+                        "label": "From_E164"
+                    },
+                    {
+                        "name": "WorkerID",
+                        "type": "any",
+                        "label": "WorkerID"
+                    },
+                    {
+                        "name": "Language",
+                        "type": "any",
+                        "label": "Language"
+                    },
+                    {
+                        "name": "Attempt_Raw",
+                        "type": "any",
+                        "label": "Attempt_Raw"
+                    },
+                    {
+                        "name": "PreviousStatus",
+                        "type": "any",
+                        "label": "PreviousStatus"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 3,
+            "module": "google-sheets:filterRows",
+            "version": 2,
+            "parameters": {
+                "__IMTCONN__": 6401856
+            },
+            "mapper": {
+                "from": "drive",
+                "limit": "1",
+                "filter": [
+                    [
+                        {
+                            "a": "A",
+                            "b": "{{2.WorkerID}}",
+                            "o": "text:equal:ci"
+                        }
+                    ]
+                ],
+                "sheetId": "Roster_Master",
+                "sortOrder": "asc",
+                "spreadsheetId": "1i5ypJyAdCShBq3AacjfC2uPdlcMZi-nkSH5IWhfU_9o",
+                "tableFirstRow": "A1:Z1",
+                "includesHeaders": true,
+                "valueRenderOption": "FORMATTED_VALUE",
+                "dateTimeRenderOption": "FORMATTED_STRING"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 560,
+                    "y": 144,
+                    "name": "Roster Lookup (by WorkerID)"
+                },
+                "restore": {
+                    "expect": {
+                        "from": {
+                            "label": "Select from My Drive"
+                        },
+                        "orderBy": {
+                            "mode": "chose",
+                            "label": "Empty"
+                        },
+                        "sheetId": {
+                            "mode": "chose",
+                            "label": "Roster_Master"
+                        },
+                        "sortOrder": {
+                            "mode": "chose",
+                            "label": "Ascending"
+                        },
+                        "spreadsheetId": {
+                            "mode": "chose",
+                            "label": "RK_Field_Reporting_MASTER"
+                        },
+                        "tableFirstRow": {
+                            "label": "A-Z"
+                        },
+                        "includesHeaders": {
+                            "mode": "chose",
+                            "label": "Yes"
+                        },
+                        "valueRenderOption": {
+                            "mode": "chose",
+                            "label": "Formatted value"
+                        },
+                        "dateTimeRenderOption": {
+                            "mode": "chose",
+                            "label": "Formatted string"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            },
+                            "label": "Universal (admin@rkcorp.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "from",
+                        "type": "select",
+                        "label": "Search Method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "drive",
+                                "share"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "valueRenderOption",
+                        "type": "select",
+                        "label": "Value render option",
+                        "validate": {
+                            "enum": [
+                                "FORMATTED_VALUE",
+                                "UNFORMATTED_VALUE",
+                                "FORMULA"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "dateTimeRenderOption",
+                        "type": "select",
+                        "label": "Date and time render option",
+                        "validate": {
+                            "enum": [
+                                "SERIAL_NUMBER",
+                                "FORMATTED_STRING"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "type": "uinteger",
+                        "label": "Limit"
+                    },
+                    {
+                        "name": "spreadsheetId",
+                        "type": "select",
+                        "label": "Spreadsheet ID",
+                        "required": true
+                    },
+                    {
+                        "name": "sheetId",
+                        "type": "select",
+                        "label": "Sheet Name",
+                        "required": true
+                    },
+                    {
+                        "name": "includesHeaders",
+                        "type": "select",
+                        "label": "Table contains headers",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                true,
+                                false
+                            ]
+                        }
+                    },
+                    {
+                        "name": "tableFirstRow",
+                        "type": "select",
+                        "label": "Column range",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "A1:Z1",
+                                "A1:BZ1",
+                                "A1:CZ1",
+                                "A1:DZ1",
+                                "A1:MZ1",
+                                "A1:ZZ1",
+                                "A1:AZZ1",
+                                "A1:BZZ1",
+                                "A1:CZZ1",
+                                "A1:DZZ1",
+                                "A1:MZZ1",
+                                "A1:ZZZ1"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "type": "filter",
+                        "label": "Filter",
+                        "options": "rpc://google-sheets/2/rpcGetFilterKeys?includesHeaders=true"
+                    },
+                    {
+                        "name": "orderBy",
+                        "type": "select",
+                        "label": "Order by"
+                    },
+                    {
+                        "name": "sortOrder",
+                        "type": "select",
+                        "label": "Sort order",
+                        "validate": {
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "__IMTLENGTH__",
+                        "type": "uinteger",
+                        "label": "Total number of bundles"
+                    },
+                    {
+                        "name": "__IMTINDEX__",
+                        "type": "uinteger",
+                        "label": "Bundle order position"
+                    },
+                    {
+                        "name": "__ROW_NUMBER__",
+                        "type": "number",
+                        "label": "Row number"
+                    },
+                    {
+                        "name": "__SPREADSHEET_ID__",
+                        "type": "text",
+                        "label": "Spreadsheet ID"
+                    },
+                    {
+                        "name": "__SHEET__",
+                        "type": "text",
+                        "label": "Sheet"
+                    },
+                    {
+                        "name": "0",
+                        "type": "text",
+                        "label": "Worker_ID (A)"
+                    },
+                    {
+                        "name": "1",
+                        "type": "text",
+                        "label": "First_Name (B)"
+                    },
+                    {
+                        "name": "2",
+                        "type": "text",
+                        "label": "Last_Name (C)"
+                    },
+                    {
+                        "name": "3",
+                        "type": "text",
+                        "label": "Display_Name (D)"
+                    },
+                    {
+                        "name": "4",
+                        "type": "text",
+                        "label": "Phone_E164 (E)"
+                    },
+                    {
+                        "name": "5",
+                        "type": "text",
+                        "label": "Language_Pref (F)"
+                    },
+                    {
+                        "name": "6",
+                        "type": "text",
+                        "label": "Crew_ID (G)"
+                    },
+                    {
+                        "name": "7",
+                        "type": "text",
+                        "label": "Role (H)"
+                    },
+                    {
+                        "name": "8",
+                        "type": "text",
+                        "label": "Auth_Level (I)"
+                    },
+                    {
+                        "name": "9",
+                        "type": "text",
+                        "label": "Active (J)"
+                    },
+                    {
+                        "name": "10",
+                        "type": "text",
+                        "label": "Default_Channel (K)"
+                    },
+                    {
+                        "name": "11",
+                        "type": "text",
+                        "label": "Notes (L)"
+                    },
+                    {
+                        "name": "12",
+                        "type": "text",
+                        "label": "Emergency_Contact_Link (M)"
+                    },
+                    {
+                        "name": "13",
+                        "type": "text",
+                        "label": "(N)"
+                    },
+                    {
+                        "name": "14",
+                        "type": "text",
+                        "label": "(O)"
+                    },
+                    {
+                        "name": "15",
+                        "type": "text",
+                        "label": "(P)"
+                    },
+                    {
+                        "name": "16",
+                        "type": "text",
+                        "label": "(Q)"
+                    },
+                    {
+                        "name": "17",
+                        "type": "text",
+                        "label": "(R)"
+                    },
+                    {
+                        "name": "18",
+                        "type": "text",
+                        "label": "(S)"
+                    },
+                    {
+                        "name": "19",
+                        "type": "text",
+                        "label": "(T)"
+                    },
+                    {
+                        "name": "20",
+                        "type": "text",
+                        "label": "(U)"
+                    },
+                    {
+                        "name": "21",
+                        "type": "text",
+                        "label": "(V)"
+                    },
+                    {
+                        "name": "22",
+                        "type": "text",
+                        "label": "(W)"
+                    },
+                    {
+                        "name": "23",
+                        "type": "text",
+                        "label": "(X)"
+                    },
+                    {
+                        "name": "24",
+                        "type": "text",
+                        "label": "(Y)"
+                    },
+                    {
+                        "name": "25",
+                        "type": "text",
+                        "label": "(Z)"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 4,
+            "module": "util:SetVariables",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "scope": "roundtrip",
+                "variables": [
+                    {
+                        "name": "To_E164",
+                        "value": "{{if(length(replace(replace(replace(replace(replace(replace(replace(if((ifempty(2.To_Raw; \"\") = \"\") | (ifempty(2.To_Raw; \"\") = \"\"); trim(toString(ifempty(3.`4`; \"\"))); trim(toString(2.To_Raw))); \"+\"; \"\"); ; \"\"); \"-\"; \"\"); \"(\"; \"\"); \")\"; \"\"); \"'\"; \"\"); \".\"; \"\")) < 10; \"\"; 1 & substring(replace(replace(replace(replace(replace(replace(replace(if((ifempty(2.To_Raw; \"\") = \"\") | (ifempty(2.To_Raw; \"\") = \"\"); trim(toString(ifempty(3.`4`; \"\"))); trim(toString(2.To_Raw))); \"+\"; \"\"); ; \"\"); \"-\"; \"\"); \"(\"; \"\"); \")\"; \"\"); \"'\"; \"\"); \".\"; \"\"); max(0; length(replace(replace(replace(replace(replace(replace(replace(if((ifempty(2.To_Raw; \"\") = \"\") | (ifempty(2.To_Raw; \"\") = \"\"); trim(toString(ifempty(3.`4`; \"\"))); trim(toString(2.To_Raw))); \"+\"; \"\"); ; \"\"); \"-\"; \"\"); \"(\"; \"\"); \")\"; \"\"); \"'\"; \"\"); \".\"; \"\")) - 10); 10))}}"
+                    },
+                    {
+                        "name": "Attempt_Number_Safe",
+                        "value": "{{if((ifempty(trim(toString(2.Attempt_Raw)); \"\") = \"\") | contains(lower(trim(toString(2.Attempt_Raw))); \"e\"); \"\"; replace(trim(toString(2.Attempt_Raw)); \",\"; \"\"))}}"
+                    },
+                    {
+                        "name": "Attempt_Next",
+                        "value": "{{if((ifempty(trim(toString(2.Attempt_Raw)); \"\") = \"\") | contains(lower(trim(toString(2.Attempt_Raw))); \"e\"); \"\"; toString(parseNumber(replace(trim(toString(2.Attempt_Raw)); \",\"; \"\")) + 1))}}"
+                    }
+                ]
+            },
+            "metadata": {
+                "designer": {
+                    "x": 890,
+                    "y": 660,
+                    "name": "DERIVE: To_E164 (payload→roster fallback) + Attempt guards"
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One cycle"
+                        },
+                        "variables": {
+                            "items": [
+                                null,
+                                null,
+                                null
+                            ]
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "variables",
+                        "spec": [
+                            {
+                                "name": "name",
+                                "type": "text",
+                                "label": "Variable name",
+                                "required": true
+                            },
+                            {
+                                "name": "value",
+                                "type": "any",
+                                "label": "Variable value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Variables"
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "To_E164",
+                        "type": "any",
+                        "label": "To_E164"
+                    },
+                    {
+                        "name": "Attempt_Number_Safe",
+                        "type": "any",
+                        "label": "Attempt_Number_Safe"
+                    },
+                    {
+                        "name": "Attempt_Next",
+                        "type": "any",
+                        "label": "Attempt_Next"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 5,
+            "module": "builtin:BasicRouter",
+            "version": 1,
+            "parameters": {},
+            "mapper": null,
+            "metadata": {
+                "designer": {
+                    "x": 1200,
+                    "y": 150,
+                    "name": "ROUTER (Dial vs Stop)"
+                }
+            },
+            "routes": [
+                {
+                    "flow": [
+                        {
+                            "id": 6,
+                            "module": "twilio:CreateCall",
+                            "version": 2,
+                            "parameters": {
+                                "__IMTCONN__": 6613842
+                            },
+                            "filter": {
+                                "name": "To_E164 present",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{ifempty(4.To_E164; \"\")}}",
+                                            "b": "",
+                                            "o": "text:notequal:ci"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "to": "{{ifempty(4.To_E164; \"\")}}",
+                                "sip": {},
+                                "from": {
+                                    "from": "+16317803880",
+                                    "fromType": "phone"
+                                },
+                                "record": {},
+                                "asyncAmd": {},
+                                "instructions": {
+                                    "url": "https://hook.us2.make.com/gosceetpq4fc1guv4xf5yb5d5xmq3toy?Mode=RedialWebhook&WorkerID={{encodeURL(2.WorkerID)}}&Attempt_Number={{encodeURL(4.Attempt_Next)}}&PreviousStatus={{encodeURL(2.PreviousStatus)}}&Language={{encodeURL(2.Language)}}",
+                                    "instructionType": "url"
+                                },
+                                "machineDetection": {}
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1945,
+                                    "y": -346,
+                                    "name": "Redial (Twilio Create Call)"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "from": {
+                                            "nested": {
+                                                "from": {
+                                                    "mode": "chose",
+                                                    "label": "(631) 780-3880"
+                                                },
+                                                "fromType": {
+                                                    "label": "phone number"
+                                                }
+                                            }
+                                        },
+                                        "trim": {
+                                            "mode": "chose",
+                                            "label": "Empty"
+                                        },
+                                        "instructions": {
+                                            "nested": {
+                                                "method": {
+                                                    "mode": "chose",
+                                                    "label": "Empty"
+                                                },
+                                                "fallbackMethod": {
+                                                    "mode": "chose",
+                                                    "label": "Empty"
+                                                },
+                                                "instructionType": {
+                                                    "label": "URL"
+                                                },
+                                                "statusCallbackEvent": {
+                                                    "mode": "chose"
+                                                },
+                                                "statusCallbackMethod": {
+                                                    "mode": "chose",
+                                                    "label": "Empty"
+                                                }
+                                            }
+                                        },
+                                        "machineDetection": {
+                                            "nested": {
+                                                "machineDetection": {
+                                                    "label": "Empty"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "twilio"
+                                            },
+                                            "label": "My Twilio"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:twilio",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "from",
+                                        "spec": [
+                                            {
+                                                "name": "fromType",
+                                                "type": "select",
+                                                "label": "Make a call from",
+                                                "required": true,
+                                                "validate": {
+                                                    "enum": [
+                                                        "phone",
+                                                        "caller"
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "name": "from",
+                                                "type": "select",
+                                                "label": "Phone number",
+                                                "required": true
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "From",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "to",
+                                        "type": "text",
+                                        "label": "To",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "instructions",
+                                        "spec": [
+                                            {
+                                                "name": "instructionType",
+                                                "type": "select",
+                                                "label": "Set instructions from",
+                                                "required": true,
+                                                "validate": {
+                                                    "enum": [
+                                                        "url",
+                                                        "twiml",
+                                                        "application"
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "name": "url",
+                                                "type": "url",
+                                                "label": "URL",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "method",
+                                                "type": "select",
+                                                "label": "Method",
+                                                "validate": {
+                                                    "enum": [
+                                                        "GET",
+                                                        "POST"
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "name": "fallbackUrl",
+                                                "type": "url",
+                                                "label": "Fallback URL"
+                                            },
+                                            {
+                                                "name": "fallbackMethod",
+                                                "type": "select",
+                                                "label": "Fallback method",
+                                                "validate": {
+                                                    "enum": [
+                                                        "GET",
+                                                        "POST"
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "name": "statusCallback",
+                                                "type": "url",
+                                                "label": "Status callback URL"
+                                            },
+                                            {
+                                                "name": "statusCallbackMethod",
+                                                "type": "select",
+                                                "label": "Status callback method",
+                                                "validate": {
+                                                    "enum": [
+                                                        "GET",
+                                                        "POST"
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "name": "statusCallbackEvent",
+                                                "type": "select",
+                                                "label": "Status callback events",
+                                                "multiple": true,
+                                                "validate": {
+                                                    "enum": [
+                                                        "initiated",
+                                                        "ringing",
+                                                        "answered",
+                                                        "completed"
+                                                    ]
+                                                }
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Instructions",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "byoc",
+                                        "type": "text",
+                                        "label": "BYOC"
+                                    },
+                                    {
+                                        "name": "sendDigits",
+                                        "type": "text",
+                                        "label": "Send digits"
+                                    },
+                                    {
+                                        "name": "timeout",
+                                        "type": "uinteger",
+                                        "label": "Timeout"
+                                    },
+                                    {
+                                        "name": "trim",
+                                        "type": "select",
+                                        "label": "Trim",
+                                        "validate": {
+                                            "enum": [
+                                                "trim-silence",
+                                                "do-not-trim"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "callerId",
+                                        "type": "text",
+                                        "label": "Caller ID"
+                                    },
+                                    {
+                                        "name": "sip",
+                                        "spec": [
+                                            {
+                                                "name": "sipAuthUsername",
+                                                "type": "text",
+                                                "label": "Username"
+                                            },
+                                            {
+                                                "name": "sipAuthPassword",
+                                                "type": "text",
+                                                "label": "Password"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "SIP call authentication"
+                                    },
+                                    {
+                                        "name": "record",
+                                        "spec": [
+                                            {
+                                                "name": "record",
+                                                "type": "boolean",
+                                                "label": "Enable recording a call"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Recording"
+                                    },
+                                    {
+                                        "name": "machineDetection",
+                                        "spec": [
+                                            {
+                                                "name": "machineDetection",
+                                                "type": "select",
+                                                "label": "Enable machine detection",
+                                                "validate": {
+                                                    "enum": [
+                                                        "Enable",
+                                                        "DetectMessageEnd"
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "name": "machineDetectionTimeout",
+                                                "type": "uinteger",
+                                                "label": "Timeout"
+                                            },
+                                            {
+                                                "name": "machineDetectionSpeechThreshold",
+                                                "type": "uinteger",
+                                                "label": "Speech threshold"
+                                            },
+                                            {
+                                                "name": "machineDetectionSpeechEndThreshold",
+                                                "type": "uinteger",
+                                                "label": "Speech end threshold"
+                                            },
+                                            {
+                                                "name": "machineDetectionSilenceTimeout",
+                                                "type": "uinteger",
+                                                "label": "Speech silence timeout"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Machine detection"
+                                    },
+                                    {
+                                        "name": "asyncAmd",
+                                        "spec": [
+                                            {
+                                                "name": "asyncAmd",
+                                                "type": "boolean",
+                                                "label": "Enable answering machine detection"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Answering machine detection"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 8,
+                            "module": "gateway:WebhookRespond",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "body": "Dial queued.",
+                                "status": "200",
+                                "headers": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ]
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 2951,
+                                    "y": -357,
+                                    "name": "Respond OK (Redial Started)"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "headers": {
+                                            "mode": "chose",
+                                            "items": [
+                                                null
+                                            ]
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "status",
+                                        "type": "uinteger",
+                                        "label": "Status",
+                                        "required": true,
+                                        "validate": {
+                                            "min": 100
+                                        }
+                                    },
+                                    {
+                                        "name": "body",
+                                        "type": "any",
+                                        "label": "Body"
+                                    },
+                                    {
+                                        "name": "headers",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 256
+                                                }
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 4096
+                                                }
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Custom headers",
+                                        "validate": {
+                                            "maxItems": 16
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 7,
+                            "module": "gateway:WebhookRespond",
+                            "version": 1,
+                            "parameters": {},
+                            "filter": {
+                                "name": "Missing/Invalid To",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{ifempty(4.To_E164; \"\")}}",
+                                            "b": "",
+                                            "o": "text:equal:ci"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "body": "STOP: No valid To_E164 (payload + roster empty/placeholder).",
+                                "status": "400",
+                                "headers": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ]
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1933,
+                                    "y": 656,
+                                    "name": "Respond 400 (Missing/Invalid To)"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "headers": {
+                                            "mode": "chose",
+                                            "items": [
+                                                null
+                                            ]
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "status",
+                                        "type": "uinteger",
+                                        "label": "Status",
+                                        "required": true,
+                                        "validate": {
+                                            "min": 100
+                                        }
+                                    },
+                                    {
+                                        "name": "body",
+                                        "type": "any",
+                                        "label": "Body"
+                                    },
+                                    {
+                                        "name": "headers",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 256
+                                                }
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value",
+                                                "required": true,
+                                                "validate": {
+                                                    "max": 4096
+                                                }
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Custom headers",
+                                        "validate": {
+                                            "maxItems": 16
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": false,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "us2.make.com",
+        "notes": []
+    }
+}

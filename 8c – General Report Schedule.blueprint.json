@@ -1,0 +1,1773 @@
+{
+    "name": "8.c – General Report Schedule",
+    "flow": [
+        {
+            "id": 1,
+            "module": "google-sheets:filterRows",
+            "version": 2,
+            "parameters": {
+                "__IMTCONN__": 6401856
+            },
+            "mapper": {
+                "from": "drive",
+                "filter": [
+                    [
+                        {
+                            "a": "K",
+                            "b": "Queued",
+                            "o": "text:equal:ci"
+                        },
+                        {
+                            "a": "C",
+                            "b": "General",
+                            "o": "text:equal:ci"
+                        }
+                    ]
+                ],
+                "sheetId": "Alert_Queue",
+                "sortOrder": "asc",
+                "spreadsheetId": "1i5ypJyAdCShBq3AacjfC2uPdlcMZi-nkSH5IWhfU_9o",
+                "tableFirstRow": "A1:Z1",
+                "includesHeaders": true,
+                "valueRenderOption": "FORMATTED_VALUE",
+                "dateTimeRenderOption": "FORMATTED_STRING"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 0,
+                    "name": "Filter (Queued + General)"
+                },
+                "restore": {
+                    "expect": {
+                        "from": {
+                            "label": "Select from My Drive"
+                        },
+                        "orderBy": {
+                            "mode": "chose",
+                            "label": "Empty"
+                        },
+                        "sheetId": {
+                            "mode": "chose",
+                            "label": "Alert_Queue"
+                        },
+                        "sortOrder": {
+                            "mode": "chose",
+                            "label": "Ascending"
+                        },
+                        "spreadsheetId": {
+                            "mode": "chose",
+                            "label": "RK_Field_Reporting_MASTER"
+                        },
+                        "tableFirstRow": {
+                            "label": "A-Z"
+                        },
+                        "includesHeaders": {
+                            "mode": "chose",
+                            "label": "Yes"
+                        },
+                        "valueRenderOption": {
+                            "mode": "chose",
+                            "label": "Formatted value"
+                        },
+                        "dateTimeRenderOption": {
+                            "mode": "chose",
+                            "label": "Formatted string"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            },
+                            "label": "https://docs.google.com/spreadsheets/d/1b_Uba8LFmbV14P3UHJnzSnaJ5s-kqtEUt4HVO4iYc6k/edit?usp=sharing (admin@rkcorp.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "from",
+                        "type": "select",
+                        "label": "Search Method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "drive",
+                                "share"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "valueRenderOption",
+                        "type": "select",
+                        "label": "Value render option",
+                        "validate": {
+                            "enum": [
+                                "FORMATTED_VALUE",
+                                "UNFORMATTED_VALUE",
+                                "FORMULA"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "dateTimeRenderOption",
+                        "type": "select",
+                        "label": "Date and time render option",
+                        "validate": {
+                            "enum": [
+                                "SERIAL_NUMBER",
+                                "FORMATTED_STRING"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "type": "uinteger",
+                        "label": "Limit"
+                    },
+                    {
+                        "name": "spreadsheetId",
+                        "type": "select",
+                        "label": "Spreadsheet ID",
+                        "required": true
+                    },
+                    {
+                        "name": "sheetId",
+                        "type": "select",
+                        "label": "Sheet Name",
+                        "required": true
+                    },
+                    {
+                        "name": "includesHeaders",
+                        "type": "select",
+                        "label": "Table contains headers",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                true,
+                                false
+                            ]
+                        }
+                    },
+                    {
+                        "name": "tableFirstRow",
+                        "type": "select",
+                        "label": "Column range",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "A1:Z1",
+                                "A1:BZ1",
+                                "A1:CZ1",
+                                "A1:DZ1",
+                                "A1:MZ1",
+                                "A1:ZZ1",
+                                "A1:AZZ1",
+                                "A1:BZZ1",
+                                "A1:CZZ1",
+                                "A1:DZZ1",
+                                "A1:MZZ1",
+                                "A1:ZZZ1"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "type": "filter",
+                        "label": "Filter",
+                        "options": "rpc://google-sheets/2/rpcGetFilterKeys?includesHeaders=true"
+                    },
+                    {
+                        "name": "orderBy",
+                        "type": "select",
+                        "label": "Order by"
+                    },
+                    {
+                        "name": "sortOrder",
+                        "type": "select",
+                        "label": "Sort order",
+                        "validate": {
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "__IMTLENGTH__",
+                        "type": "uinteger",
+                        "label": "Total number of bundles"
+                    },
+                    {
+                        "name": "__IMTINDEX__",
+                        "type": "uinteger",
+                        "label": "Bundle order position"
+                    },
+                    {
+                        "name": "__ROW_NUMBER__",
+                        "type": "number",
+                        "label": "Row number"
+                    },
+                    {
+                        "name": "__SPREADSHEET_ID__",
+                        "type": "text",
+                        "label": "Spreadsheet ID"
+                    },
+                    {
+                        "name": "__SHEET__",
+                        "type": "text",
+                        "label": "Sheet"
+                    },
+                    {
+                        "name": "0",
+                        "type": "text",
+                        "label": "Queue_ID (A)"
+                    },
+                    {
+                        "name": "1",
+                        "type": "text",
+                        "label": "Created_At (B)"
+                    },
+                    {
+                        "name": "2",
+                        "type": "text",
+                        "label": "Tier (C)"
+                    },
+                    {
+                        "name": "3",
+                        "type": "text",
+                        "label": "WorkerID (D)"
+                    },
+                    {
+                        "name": "4",
+                        "type": "text",
+                        "label": "CallLogID (E)"
+                    },
+                    {
+                        "name": "5",
+                        "type": "text",
+                        "label": "RecordingUrl (F)"
+                    },
+                    {
+                        "name": "6",
+                        "type": "text",
+                        "label": "RecordingDuration (G)"
+                    },
+                    {
+                        "name": "7",
+                        "type": "text",
+                        "label": "Severity (H)"
+                    },
+                    {
+                        "name": "8",
+                        "type": "text",
+                        "label": "SpeechResult (I)"
+                    },
+                    {
+                        "name": "9",
+                        "type": "text",
+                        "label": "Language (J)"
+                    },
+                    {
+                        "name": "10",
+                        "type": "text",
+                        "label": "Status (K)"
+                    },
+                    {
+                        "name": "11",
+                        "type": "text",
+                        "label": "Batch_Tag (L)"
+                    },
+                    {
+                        "name": "12",
+                        "type": "text",
+                        "label": "(M)"
+                    },
+                    {
+                        "name": "13",
+                        "type": "text",
+                        "label": "(N)"
+                    },
+                    {
+                        "name": "14",
+                        "type": "text",
+                        "label": "(O)"
+                    },
+                    {
+                        "name": "15",
+                        "type": "text",
+                        "label": "(P)"
+                    },
+                    {
+                        "name": "16",
+                        "type": "text",
+                        "label": "(Q)"
+                    },
+                    {
+                        "name": "17",
+                        "type": "text",
+                        "label": "(R)"
+                    },
+                    {
+                        "name": "18",
+                        "type": "text",
+                        "label": "(S)"
+                    },
+                    {
+                        "name": "19",
+                        "type": "text",
+                        "label": "(T)"
+                    },
+                    {
+                        "name": "20",
+                        "type": "text",
+                        "label": "(U)"
+                    },
+                    {
+                        "name": "21",
+                        "type": "text",
+                        "label": "(V)"
+                    },
+                    {
+                        "name": "22",
+                        "type": "text",
+                        "label": "(W)"
+                    },
+                    {
+                        "name": "23",
+                        "type": "text",
+                        "label": "(X)"
+                    },
+                    {
+                        "name": "24",
+                        "type": "text",
+                        "label": "(Y)"
+                    },
+                    {
+                        "name": "25",
+                        "type": "text",
+                        "label": "(Z)"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 2,
+            "module": "builtin:BasicAggregator",
+            "version": 1,
+            "parameters": {
+                "feeder": 1
+            },
+            "mapper": {
+                "0": "{{1.`0`}}",
+                "1": "{{1.`1`}}",
+                "2": "{{1.`2`}}",
+                "3": "{{1.`3`}}",
+                "4": "{{1.`4`}}",
+                "5": "{{1.`5`}}",
+                "6": "{{1.`6`}}",
+                "7": "{{1.`7`}}",
+                "8": "{{1.`8`}}",
+                "9": "{{1.`9`}}",
+                "10": "{{1.`10`}}",
+                "11": "{{1.`11`}}",
+                "__IMTINDEX__": "{{1.`__IMTINDEX__`}}",
+                "__IMTLENGTH__": "{{1.`__IMTLENGTH__`}}",
+                "__ROW_NUMBER__": "{{1.`__ROW_NUMBER__`}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 299,
+                    "y": 456,
+                    "name": "Snapshot rows"
+                },
+                "restore": {
+                    "extra": {
+                        "feeder": {
+                            "label": "1. Sheets — Filter (Queued + General) - Search Rows [1]"
+                        },
+                        "target": {
+                            "label": "Custom"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "id": 3,
+            "module": "util:SetVariables",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "scope": "execution",
+                "variables": [
+                    {
+                        "name": "Rows_Array",
+                        "value": "{{2.array}}"
+                    },
+                    {
+                        "name": "Total_Count",
+                        "value": "{{length(2.array)}}"
+                    },
+                    {
+                        "name": "Current_Date",
+                        "value": "{{formatDate(now; \"MMMM D, YYYY\")}}"
+                    },
+                    {
+                        "name": "Email_Subject",
+                        "value": "{{\"📋 General Report Digest: \" & length(2.array) & \" Items\"}}"
+                    }
+                ]
+            },
+            "metadata": {
+                "designer": {
+                    "x": 590,
+                    "y": 907,
+                    "name": "Pills"
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One execution"
+                        },
+                        "variables": {
+                            "items": [
+                                null,
+                                null,
+                                null,
+                                null
+                            ]
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "variables",
+                        "spec": [
+                            {
+                                "name": "name",
+                                "type": "text",
+                                "label": "Variable name",
+                                "required": true
+                            },
+                            {
+                                "name": "value",
+                                "type": "any",
+                                "label": "Variable value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Variables"
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "Rows_Array",
+                        "type": "any",
+                        "label": "Rows_Array"
+                    },
+                    {
+                        "name": "Total_Count",
+                        "type": "any",
+                        "label": "Total_Count"
+                    },
+                    {
+                        "name": "Current_Date",
+                        "type": "any",
+                        "label": "Current_Date"
+                    },
+                    {
+                        "name": "Email_Subject",
+                        "type": "any",
+                        "label": "Email_Subject"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 4,
+            "module": "util:GetVariables",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "variables": []
+            },
+            "metadata": {
+                "designer": {
+                    "x": 890,
+                    "y": 907,
+                    "name": "Restore"
+                }
+            }
+        },
+        {
+            "id": 5,
+            "module": "builtin:BasicFeeder",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "array": "{{3.Rows_Array}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1209,
+                    "y": 480,
+                    "name": "Build HTML"
+                },
+                "restore": {
+                    "expect": {
+                        "array": {
+                            "mode": "edit"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "mode": "edit",
+                        "name": "array",
+                        "spec": [],
+                        "type": "array",
+                        "label": "Array"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 6,
+            "module": "util:TextAggregator",
+            "version": 1,
+            "parameters": {
+                "feeder": 5,
+                "rowSeparator": ""
+            },
+            "mapper": {
+                "value": "<tr>\n  <td style=\"padding:12px 10px; border-bottom:1px solid #111827; color:#E5E7EB; font-size:13px;\">\n    <strong>{{ifempty(5.`3`; \"—\")}}</strong>\n    <div style=\"font-size:11px;color:#9CA3AF;margin-top:2px;\">{{ifempty(5.`0`; \"—\")}}</div>\n  </td>\n  <td style=\"padding:12px 10px; border-bottom:1px solid #111827; color:#9CA3AF; font-size:12px;\">\n    {{ifempty(5.`1`; \"—\")}}\n  </td>\n  <td style=\"padding:12px 10px; border-bottom:1px solid #111827; color:#9CA3AF; font-size:12px;\">\n    {{ifempty(5.`6`; \"—\")}}\n  </td>\n  <td style=\"padding:12px 10px; border-bottom:1px solid #111827; color:#9CA3AF; font-size:12px;\">\n    {{ifempty(5.`9`; \"—\")}}\n  </td>\n  <td style=\"padding:12px 10px; border-bottom:1px solid #111827; color:#E5E7EB; font-size:12px; line-height:1.45;\">\n    <span style=\"display:inline-block;padding:2px 8px;border-radius:999px;background:#1e3a8a;border:1px solid #1d4ed8;color:#93c5fd;font-size:11px;font-weight:800;letter-spacing:0.2px;margin-right:6px;\">\n      {{ifempty(5.`7`; \"General\")}}\n    </span>\n    {{if(length(ifempty(5.`8`; emptystring)) > 110; substring(ifempty(5.`8`; emptystring); 0; 110) & \"...\"; ifempty(5.`8`; emptystring))}}\n  </td>\n  <td style=\"padding:12px 10px; border-bottom:1px solid #111827; text-align:right;\">\n    <a href=\"{{ifempty(5.`5`; emptystring)}}\" style=\"color:#60A5FA; text-decoration:none; font-size:12px; font-weight:800;\">Listen</a>\n  </td>\n</tr>"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1490,
+                    "y": 907,
+                    "name": "HTML Rows"
+                }
+            }
+        },
+        {
+            "id": 7,
+            "module": "util:SetVariables",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "scope": "execution",
+                "variables": [
+                    {
+                        "name": "Digest_Rows",
+                        "value": "{{6.text}}"
+                    }
+                ]
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1790,
+                    "y": 907,
+                    "name": "Store HTML"
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One execution"
+                        },
+                        "variables": {
+                            "items": [
+                                null
+                            ]
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "variables",
+                        "spec": [
+                            {
+                                "name": "name",
+                                "type": "text",
+                                "label": "Variable name",
+                                "required": true
+                            },
+                            {
+                                "name": "value",
+                                "type": "any",
+                                "label": "Variable value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Variables"
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "Digest_Rows",
+                        "type": "any",
+                        "label": "Digest_Rows"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 8,
+            "module": "util:GetVariables",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "variables": []
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2090,
+                    "y": 907,
+                    "name": "Ready to Send"
+                }
+            }
+        },
+        {
+            "id": 9,
+            "module": "google-email:sendAnEmail",
+            "version": 4,
+            "parameters": {
+                "__IMTCONN__": 6440838
+            },
+            "filter": {
+                "name": "Guard: Only if Data Exists",
+                "conditions": [
+                    [
+                        {
+                            "a": "{{3.Total_Count}}",
+                            "b": "0",
+                            "o": "number:greater"
+                        }
+                    ]
+                ]
+            },
+            "mapper": {
+                "to": [
+                    "admin@rkcorp.com"
+                ],
+                "from": "\"RK Systems Admin\" <reporting@rkcorp.com>",
+                "content": "<!doctype html>\n<html>\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"x-apple-disable-message-reformatting\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  <title>RK General Reports — Daily Digest</title>\n</head>\n\n<body style=\"margin:0;padding:0;background-color:#0b1020;color:#E5E7EB;font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;\">\n  <table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" width=\"100%\" style=\"background-color:#0b1020;padding:26px 0;\">\n    <tr>\n      <td align=\"center\" style=\"padding:0 12px;\">\n\n        <!-- MAIN WRAP -->\n        <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"\n          max-width:720px;\n          background:linear-gradient(180deg, rgba(17,24,39,0.92), rgba(2,6,23,0.92));\n          border-radius:18px;\n          overflow:hidden;\n          border:1px solid rgba(255,255,255,0.08);\n          box-shadow:0 22px 68px rgba(0,0,0,0.62);\n        \">\n\n          <!-- OG BLACK LOGO HEADER -->\n          <tr>\n            <td style=\"padding:22px 20px 14px 20px;background:#000000;border-bottom:1px solid rgba(255,255,255,0.06);\">\n              <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\">\n                <tr>\n                  <td align=\"center\">\n                    <img\n                      src=\"https://drive.google.com/uc?export=view&id=1l0VVx0qzjYwy2-0zH_g8tC2t4Hk1zY0W\"\n                      width=\"92\"\n                      alt=\"RK\"\n                      style=\"display:block;max-width:92px;height:auto;margin:0 auto;border:0;outline:none;text-decoration:none;\"\n                    />\n                  </td>\n                </tr>\n                <tr>\n                  <td align=\"center\" style=\"padding-top:10px;\">\n                    <div style=\"font-size:18px;font-weight:900;letter-spacing:0.4px;color:#93C5FD;\">\n                      📋 GENERAL REPORTS (DAILY)\n                    </div>\n                    <div style=\"margin-top:6px;font-size:12px;color:rgba(229,231,235,0.70);line-height:1.7;\">\n                      RK Field Reporting System — Scheduled Digest\n                    </div>\n                  </td>\n                </tr>\n              </table>\n            </td>\n          </tr>\n\n          <!-- GLASS SUMMARY CARD -->\n          <tr>\n            <td style=\"padding:18px 22px 6px 22px;\">\n              <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"margin:0;\">\n                <tr>\n                  <td style=\"\n                    padding:1px;\n                    border-radius:18px;\n                    background:linear-gradient(135deg, rgba(96,165,250,0.85), rgba(34,197,94,0.55));\n                  \">\n                    <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"\n                      border-radius:17px;\n                      overflow:hidden;\n                      background:rgba(10,16,28,0.82);\n                      border:1px solid rgba(255,255,255,0.06);\n                      box-shadow:0 18px 48px rgba(0,0,0,0.55);\n                    \">\n                      <tr>\n                        <td align=\"center\" style=\"padding:18px 18px 10px 18px;\">\n                          <div style=\"font-size:13px;color:rgba(229,231,235,0.78);letter-spacing:0.2px;line-height:1.6;\">\n                            Digest Date:\n                            <span style=\"color:#F9FAFB;font-weight:900;\">{{3.Current_Date}}</span>\n                          </div>\n\n                          <table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"margin:12px auto 0 auto;\">\n                            <tr>\n                              <td style=\"\n                                padding:1px;\n                                border-radius:999px;\n                                background:linear-gradient(90deg, rgba(96,165,250,0.95), rgba(59,130,246,0.70));\n                              \">\n                                <div style=\"\n                                  border-radius:999px;\n                                  background:rgba(255,255,255,0.05);\n                                  border:1px solid rgba(255,255,255,0.06);\n                                  padding:9px 14px;\n                                  font-size:13px;\n                                  color:#DBEAFE;\n                                  font-weight:900;\n                                  letter-spacing:0.2px;\n                                \">\n                                  Total Items: {{3.Total_Count}}\n                                </div>\n                              </td>\n                            </tr>\n                          </table>\n\n                          <div style=\"margin-top:10px;font-size:12px;color:rgba(229,231,235,0.70);line-height:1.65;\">\n                            These items were queued as <span style=\"color:#93C5FD;font-weight:900;\">General</span>.\n                            Routine field updates and administrative items.\n                          </div>\n                        </td>\n                      </tr>\n\n                      <tr>\n                        <td style=\"padding:0 18px 18px 18px;\">\n                          <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"\n                            background:rgba(255,255,255,0.04);\n                            border:1px solid rgba(255,255,255,0.08);\n                            border-radius:14px;\n                            overflow:hidden;\n                          \">\n                            <tr>\n                              <td style=\"padding:12px 14px;text-align:center;\">\n                                <div style=\"font-size:12px;color:rgba(229,231,235,0.72);line-height:1.6;\">\n                                  Tip: open any recording link first, then decide if follow-up is needed.\n                                </div>\n                              </td>\n                            </tr>\n                          </table>\n                        </td>\n                      </tr>\n\n                    </table>\n                  </td>\n                </tr>\n              </table>\n            </td>\n          </tr>\n\n          <!-- TABLE -->\n          <tr>\n            <td style=\"padding:10px 22px 18px 22px;\">\n              <table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"\n                border-collapse:separate;\n                border-spacing:0;\n                border:1px solid rgba(255,255,255,0.08);\n                border-radius:14px;\n                overflow:hidden;\n                background:rgba(255,255,255,0.03);\n              \">\n                <thead>\n                  <tr>\n                    <td style=\"padding:12px 10px;background:rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.08);font-size:11px;color:rgba(229,231,235,0.65);font-weight:900;letter-spacing:0.35px;text-transform:uppercase;\">\n                      Worker\n                    </td>\n                    <td style=\"padding:12px 10px;background:rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.08);font-size:11px;color:rgba(229,231,235,0.65);font-weight:900;letter-spacing:0.35px;text-transform:uppercase;\">\n                      Queue ID\n                    </td>\n                    <td style=\"padding:12px 10px;background:rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.08);font-size:11px;color:rgba(229,231,235,0.65);font-weight:900;letter-spacing:0.35px;text-transform:uppercase;\">\n                      Created\n                    </td>\n                    <td style=\"padding:12px 10px;background:rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.08);font-size:11px;color:rgba(229,231,235,0.65);font-weight:900;letter-spacing:0.35px;text-transform:uppercase;\">\n                      Duration\n                    </td>\n                    <td style=\"padding:12px 10px;background:rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.08);font-size:11px;color:rgba(229,231,235,0.65);font-weight:900;letter-spacing:0.35px;text-transform:uppercase;\">\n                      Lang\n                    </td>\n                    <td style=\"padding:12px 10px;background:rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.08);font-size:11px;color:rgba(229,231,235,0.65);font-weight:900;letter-spacing:0.35px;text-transform:uppercase;\">\n                      Summary (AI)\n                    </td>\n                    <td style=\"padding:12px 10px;background:rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.08);font-size:11px;color:rgba(229,231,235,0.65);font-weight:900;letter-spacing:0.35px;text-transform:uppercase;text-align:right;\">\n                      Link\n                    </td>\n                  </tr>\n                </thead>\n\n                <tbody>\n                  {{7.Digest_Rows}}\n                </tbody>\n              </table>\n\n              <div style=\"text-align:center;margin-top:14px;font-size:12px;color:rgba(229,231,235,0.66);line-height:1.7;\">\n                Review specific items if flagged for follow-up.\n              </div>\n            </td>\n          </tr>\n\n          <!-- FOOTER (black strip) -->\n          <tr>\n            <td style=\"padding:14px 22px 18px 22px;background:#000000;border-top:1px solid rgba(255,255,255,0.06);\">\n              <div style=\"text-align:center;font-size:11px;color:rgba(229,231,235,0.45);line-height:1.7;\">\n                RK Field Reporting • Automated Notification<br/>\n                This digest was generated by Make.com.\n              </div>\n            </td>\n          </tr>\n\n        </table>\n\n        <div style=\"height:14px;\"></div>\n\n      </td>\n    </tr>\n  </table>\n</body>\n</html>",
+                "subject": "{{3.Email_Subject}}",
+                "bodyType": "rawHtml"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2338,
+                    "y": -572,
+                    "name": "Send General Digest"
+                },
+                "restore": {
+                    "expect": {
+                        "cc": {
+                            "mode": "chose"
+                        },
+                        "to": {
+                            "mode": "chose",
+                            "items": [
+                                null
+                            ]
+                        },
+                        "bcc": {
+                            "mode": "chose"
+                        },
+                        "from": {
+                            "mode": "chose",
+                            "label": "\"RK Systems Admin\" <reporting@rkcorp.com>"
+                        },
+                        "bodyType": {
+                            "label": "Raw HTML"
+                        },
+                        "attachments": {
+                            "mode": "chose"
+                        },
+                        "emailHeaders": {
+                            "mode": "chose"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google-email"
+                            },
+                            "label": "My Gmail connection (admin@rkcorp.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google-email",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "to",
+                        "spec": {
+                            "name": "value",
+                            "type": "email",
+                            "label": "Recipient email address",
+                            "required": true,
+                            "validate": true
+                        },
+                        "type": "array",
+                        "label": "To",
+                        "required": true
+                    },
+                    {
+                        "name": "subject",
+                        "type": "text",
+                        "label": "Subject"
+                    },
+                    {
+                        "name": "bodyType",
+                        "type": "select",
+                        "label": "Body type",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "rawHtml",
+                                "collection"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "attachments",
+                        "spec": {
+                            "name": "value",
+                            "spec": [
+                                {
+                                    "name": "filename",
+                                    "type": "filename",
+                                    "label": "File name",
+                                    "required": true,
+                                    "semantic": "file:name"
+                                },
+                                {
+                                    "name": "data",
+                                    "type": "buffer",
+                                    "label": "Data",
+                                    "required": true,
+                                    "semantic": "file:data"
+                                }
+                            ],
+                            "type": "collection",
+                            "label": "Attachment"
+                        },
+                        "type": "array",
+                        "label": "Attachments"
+                    },
+                    {
+                        "name": "from",
+                        "type": "select",
+                        "label": "From"
+                    },
+                    {
+                        "name": "cc",
+                        "spec": {
+                            "name": "value",
+                            "type": "email",
+                            "label": "Recipient email address",
+                            "required": true
+                        },
+                        "type": "array",
+                        "label": "CC recipients"
+                    },
+                    {
+                        "name": "bcc",
+                        "spec": {
+                            "name": "value",
+                            "type": "email",
+                            "label": "Recipient email address",
+                            "required": true
+                        },
+                        "type": "array",
+                        "label": "BCC recipients"
+                    },
+                    {
+                        "name": "emailHeaders",
+                        "spec": {
+                            "name": "value",
+                            "spec": [
+                                {
+                                    "name": "key",
+                                    "type": "text",
+                                    "label": "Key",
+                                    "required": true
+                                },
+                                {
+                                    "name": "value",
+                                    "type": "text",
+                                    "label": "Value"
+                                }
+                            ],
+                            "type": "collection",
+                            "label": "Email header"
+                        },
+                        "type": "array",
+                        "label": "Additional email headers"
+                    },
+                    {
+                        "name": "content",
+                        "type": "text",
+                        "label": "Content"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 12,
+            "module": "builtin:BasicFeeder",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "array": "{{3.Rows_Array}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2709,
+                    "y": 480,
+                    "name": "Update Rows"
+                },
+                "restore": {
+                    "expect": {
+                        "array": {
+                            "mode": "edit"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "mode": "edit",
+                        "name": "array",
+                        "spec": [],
+                        "type": "array",
+                        "label": "Array"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 13,
+            "module": "google-sheets:updateRow",
+            "version": 2,
+            "parameters": {
+                "__IMTCONN__": 6401856
+            },
+            "mapper": {
+                "from": "drive",
+                "mode": "select",
+                "values": {
+                    "0": "{{12.`0`}}",
+                    "1": "{{12.`1`}}",
+                    "2": "{{12.`2`}}",
+                    "3": "{{12.`3`}}",
+                    "4": "{{12.`4`}}",
+                    "5": "{{12.`5`}}",
+                    "6": "{{12.`6`}}",
+                    "7": "{{12.`7`}}",
+                    "8": "{{12.`8`}}",
+                    "9": "{{12.`9`}}",
+                    "10": "Sent",
+                    "11": "{{12.`11`}}"
+                },
+                "sheetId": "Alert_Queue",
+                "rowNumber": "{{12.`__ROW_NUMBER__`}}",
+                "spreadsheetId": "/1i5ypJyAdCShBq3AacjfC2uPdlcMZi-nkSH5IWhfU_9o",
+                "includesHeaders": true,
+                "valueInputOption": "USER_ENTERED"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 3000,
+                    "y": 0,
+                    "name": "Mark Sent"
+                },
+                "restore": {
+                    "expect": {
+                        "from": {
+                            "label": "My Drive"
+                        },
+                        "mode": {
+                            "label": "Search by path"
+                        },
+                        "sheetId": {
+                            "label": "Alert_Queue"
+                        },
+                        "spreadsheetId": {
+                            "path": [
+                                "RK_Field_Reporting_MASTER"
+                            ]
+                        },
+                        "includesHeaders": {
+                            "label": "Yes",
+                            "nested": [
+                                {
+                                    "name": "values",
+                                    "spec": [
+                                        {
+                                            "name": "0",
+                                            "type": "text",
+                                            "label": "Queue_ID (A)"
+                                        },
+                                        {
+                                            "name": "1",
+                                            "type": "text",
+                                            "label": "Created_At (B)"
+                                        },
+                                        {
+                                            "name": "2",
+                                            "type": "text",
+                                            "label": "Tier (C)"
+                                        },
+                                        {
+                                            "name": "3",
+                                            "type": "text",
+                                            "label": "WorkerID (D)"
+                                        },
+                                        {
+                                            "name": "4",
+                                            "type": "text",
+                                            "label": "CallLogID (E)"
+                                        },
+                                        {
+                                            "name": "5",
+                                            "type": "text",
+                                            "label": "RecordingUrl (F)"
+                                        },
+                                        {
+                                            "name": "6",
+                                            "type": "text",
+                                            "label": "RecordingDuration (G)"
+                                        },
+                                        {
+                                            "name": "7",
+                                            "type": "text",
+                                            "label": "Severity (H)"
+                                        },
+                                        {
+                                            "name": "8",
+                                            "type": "text",
+                                            "label": "SpeechResult (I)"
+                                        },
+                                        {
+                                            "name": "9",
+                                            "type": "text",
+                                            "label": "Language (J)"
+                                        },
+                                        {
+                                            "name": "10",
+                                            "type": "text",
+                                            "label": "Status (K)"
+                                        },
+                                        {
+                                            "name": "11",
+                                            "type": "text",
+                                            "label": "Batch_Tag (L)"
+                                        },
+                                        {
+                                            "name": "12",
+                                            "type": "text",
+                                            "label": "(M)"
+                                        },
+                                        {
+                                            "name": "13",
+                                            "type": "text",
+                                            "label": "(N)"
+                                        },
+                                        {
+                                            "name": "14",
+                                            "type": "text",
+                                            "label": "(O)"
+                                        },
+                                        {
+                                            "name": "15",
+                                            "type": "text",
+                                            "label": "(P)"
+                                        },
+                                        {
+                                            "name": "16",
+                                            "type": "text",
+                                            "label": "(Q)"
+                                        },
+                                        {
+                                            "name": "17",
+                                            "type": "text",
+                                            "label": "(R)"
+                                        },
+                                        {
+                                            "name": "18",
+                                            "type": "text",
+                                            "label": "(S)"
+                                        },
+                                        {
+                                            "name": "19",
+                                            "type": "text",
+                                            "label": "(T)"
+                                        },
+                                        {
+                                            "name": "20",
+                                            "type": "text",
+                                            "label": "(U)"
+                                        },
+                                        {
+                                            "name": "21",
+                                            "type": "text",
+                                            "label": "(V)"
+                                        },
+                                        {
+                                            "name": "22",
+                                            "type": "text",
+                                            "label": "(W)"
+                                        },
+                                        {
+                                            "name": "23",
+                                            "type": "text",
+                                            "label": "(X)"
+                                        },
+                                        {
+                                            "name": "24",
+                                            "type": "text",
+                                            "label": "(Y)"
+                                        },
+                                        {
+                                            "name": "25",
+                                            "type": "text",
+                                            "label": "(Z)"
+                                        }
+                                    ],
+                                    "type": "collection",
+                                    "label": "Values"
+                                }
+                            ]
+                        },
+                        "valueInputOption": {
+                            "mode": "chose",
+                            "label": "User entered"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            },
+                            "label": "https://docs.google.com/spreadsheets/d/1b_Uba8LFmbV14P3UHJnzSnaJ5s-kqtEUt4HVO4iYc6k/edit?usp=sharing (admin@rkcorp.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "mode",
+                        "type": "select",
+                        "label": "Search Method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "select",
+                                "fromAll",
+                                "map"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "valueInputOption",
+                        "type": "select",
+                        "label": "Value input option",
+                        "validate": {
+                            "enum": [
+                                "USER_ENTERED",
+                                "RAW"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "type": "select",
+                        "label": "Drive",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "drive",
+                                "share",
+                                "team"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "spreadsheetId",
+                        "type": "file",
+                        "label": "Spreadsheet ID",
+                        "required": true
+                    },
+                    {
+                        "name": "sheetId",
+                        "type": "select",
+                        "label": "Sheet Name",
+                        "required": true
+                    },
+                    {
+                        "name": "rowNumber",
+                        "type": "uinteger",
+                        "label": "Row number",
+                        "required": true
+                    },
+                    {
+                        "name": "includesHeaders",
+                        "type": "select",
+                        "label": "Table contains headers",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                true,
+                                false
+                            ]
+                        }
+                    },
+                    {
+                        "name": "values",
+                        "spec": [
+                            {
+                                "name": "0",
+                                "type": "text",
+                                "label": "Queue_ID (A)"
+                            },
+                            {
+                                "name": "1",
+                                "type": "text",
+                                "label": "Created_At (B)"
+                            },
+                            {
+                                "name": "2",
+                                "type": "text",
+                                "label": "Tier (C)"
+                            },
+                            {
+                                "name": "3",
+                                "type": "text",
+                                "label": "WorkerID (D)"
+                            },
+                            {
+                                "name": "4",
+                                "type": "text",
+                                "label": "CallLogID (E)"
+                            },
+                            {
+                                "name": "5",
+                                "type": "text",
+                                "label": "RecordingUrl (F)"
+                            },
+                            {
+                                "name": "6",
+                                "type": "text",
+                                "label": "RecordingDuration (G)"
+                            },
+                            {
+                                "name": "7",
+                                "type": "text",
+                                "label": "Severity (H)"
+                            },
+                            {
+                                "name": "8",
+                                "type": "text",
+                                "label": "SpeechResult (I)"
+                            },
+                            {
+                                "name": "9",
+                                "type": "text",
+                                "label": "Language (J)"
+                            },
+                            {
+                                "name": "10",
+                                "type": "text",
+                                "label": "Status (K)"
+                            },
+                            {
+                                "name": "11",
+                                "type": "text",
+                                "label": "Batch_Tag (L)"
+                            },
+                            {
+                                "name": "12",
+                                "type": "text",
+                                "label": "(M)"
+                            },
+                            {
+                                "name": "13",
+                                "type": "text",
+                                "label": "(N)"
+                            },
+                            {
+                                "name": "14",
+                                "type": "text",
+                                "label": "(O)"
+                            },
+                            {
+                                "name": "15",
+                                "type": "text",
+                                "label": "(P)"
+                            },
+                            {
+                                "name": "16",
+                                "type": "text",
+                                "label": "(Q)"
+                            },
+                            {
+                                "name": "17",
+                                "type": "text",
+                                "label": "(R)"
+                            },
+                            {
+                                "name": "18",
+                                "type": "text",
+                                "label": "(S)"
+                            },
+                            {
+                                "name": "19",
+                                "type": "text",
+                                "label": "(T)"
+                            },
+                            {
+                                "name": "20",
+                                "type": "text",
+                                "label": "(U)"
+                            },
+                            {
+                                "name": "21",
+                                "type": "text",
+                                "label": "(V)"
+                            },
+                            {
+                                "name": "22",
+                                "type": "text",
+                                "label": "(W)"
+                            },
+                            {
+                                "name": "23",
+                                "type": "text",
+                                "label": "(X)"
+                            },
+                            {
+                                "name": "24",
+                                "type": "text",
+                                "label": "(Y)"
+                            },
+                            {
+                                "name": "25",
+                                "type": "text",
+                                "label": "(Z)"
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Values"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 14,
+            "module": "builtin:BasicAggregator",
+            "version": 1,
+            "parameters": {
+                "feeder": 12
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 3309,
+                    "y": 480,
+                    "name": "Loop Closer — Wait for Updates"
+                },
+                "restore": {
+                    "extra": {
+                        "feeder": {
+                            "label": "12. Iterator — Update Rows [12]"
+                        },
+                        "target": {
+                            "label": "Custom"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "id": 10,
+            "module": "google-chat:actionCreateMessage",
+            "version": 1,
+            "parameters": {
+                "__IMTCONN__": 6654576
+            },
+            "mapper": {
+                "text": "**📋 GENERAL REPORTS BATCHED**\n\nDaily digest sent for **{{3.Total_Count}}** items from Alert_Queue.\n\n✅ Rows marked **Sent**.",
+                "space": {
+                    "name": "spaces/AAQAdvq_55U"
+                },
+                "thread": {},
+                "actionResponse": {}
+            },
+            "metadata": {
+                "designer": {
+                    "x": 3538,
+                    "y": -572,
+                    "name": "Post Summary"
+                },
+                "restore": {
+                    "expect": {
+                        "space": {
+                            "nested": {
+                                "name": {
+                                    "mode": "chose",
+                                    "label": "Field Reports"
+                                },
+                                "singleUserBotDm": {
+                                    "mode": "chose"
+                                }
+                            }
+                        },
+                        "cardsV2": {
+                            "mode": "chose"
+                        },
+                        "actionResponse": {
+                            "nested": {
+                                "type": {
+                                    "mode": "chose",
+                                    "label": "Empty"
+                                }
+                            }
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google-chat3"
+                            },
+                            "label": "My Google Chat connection"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google-chat3",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "text",
+                        "type": "text",
+                        "label": "Text",
+                        "required": true
+                    },
+                    {
+                        "name": "space",
+                        "spec": [
+                            {
+                                "name": "name",
+                                "type": "select",
+                                "label": "Name",
+                                "required": true
+                            },
+                            {
+                                "name": "singleUserBotDm",
+                                "type": "boolean",
+                                "label": "Single User Bot DM"
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Space"
+                    },
+                    {
+                        "name": "name",
+                        "type": "text",
+                        "label": "Name"
+                    },
+                    {
+                        "name": "cardsV2",
+                        "spec": [
+                            {
+                                "name": "cardId",
+                                "type": "text",
+                                "label": "Card ID"
+                            },
+                            {
+                                "name": "card",
+                                "spec": [
+                                    {
+                                        "name": "header",
+                                        "spec": [
+                                            {
+                                                "name": "title",
+                                                "type": "text",
+                                                "label": "Title",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "subtitle",
+                                                "type": "text",
+                                                "label": "Subtitle"
+                                            },
+                                            {
+                                                "name": "imageUrl",
+                                                "type": "url",
+                                                "label": "Image URL"
+                                            },
+                                            {
+                                                "name": "imageType",
+                                                "type": "select",
+                                                "label": "Image Type",
+                                                "options": [
+                                                    {
+                                                        "label": "Square",
+                                                        "value": "SQUARE"
+                                                    },
+                                                    {
+                                                        "label": "Circle",
+                                                        "value": "CIRCLE"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "name": "imageAltText",
+                                                "type": "text",
+                                                "label": "Image Alternative Text"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Header"
+                                    },
+                                    {
+                                        "name": "sections",
+                                        "spec": {
+                                            "spec": [
+                                                {
+                                                    "name": "header",
+                                                    "type": "text",
+                                                    "label": "Header"
+                                                },
+                                                {
+                                                    "name": "collapsible",
+                                                    "type": "boolean",
+                                                    "label": "Collapsible"
+                                                },
+                                                {
+                                                    "name": "uncollapsibleWidgetsCount",
+                                                    "type": "uinteger",
+                                                    "label": "Uncollapsible Widgets Count"
+                                                },
+                                                {
+                                                    "name": "widgets",
+                                                    "spec": {
+                                                        "spec": [
+                                                            {
+                                                                "name": "horizontalAlignment",
+                                                                "type": "select",
+                                                                "label": "Horizontal Alignment",
+                                                                "options": [
+                                                                    {
+                                                                        "label": "Unspecified",
+                                                                        "value": "HORIZONTAL_ALIGNMENT_UNSPECIFIED"
+                                                                    },
+                                                                    {
+                                                                        "label": "Start",
+                                                                        "value": "START"
+                                                                    },
+                                                                    {
+                                                                        "label": "Center",
+                                                                        "value": "CENTER"
+                                                                    },
+                                                                    {
+                                                                        "label": "End",
+                                                                        "value": "END"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            {
+                                                                "name": "dataType",
+                                                                "type": "select",
+                                                                "label": "Data Type",
+                                                                "options": [
+                                                                    {
+                                                                        "label": "Text Paragraph",
+                                                                        "value": "textParagraph",
+                                                                        "nested": [
+                                                                            {
+                                                                                "name": "textParagraph",
+                                                                                "spec": [
+                                                                                    {
+                                                                                        "help": "Displays a text paragraph.",
+                                                                                        "name": "text",
+                                                                                        "type": "text",
+                                                                                        "label": "Text"
+                                                                                    }
+                                                                                ],
+                                                                                "type": "collection",
+                                                                                "label": "Text Paragraph"
+                                                                            }
+                                                                        ]
+                                                                    },
+                                                                    {
+                                                                        "label": "Image",
+                                                                        "value": "image",
+                                                                        "nested": [
+                                                                            {
+                                                                                "name": "image",
+                                                                                "spec": [
+                                                                                    {
+                                                                                        "help": "The HTTPS URL that hosts the image.",
+                                                                                        "name": "imageUrl",
+                                                                                        "type": "url",
+                                                                                        "label": "Image URL"
+                                                                                    },
+                                                                                    {
+                                                                                        "help": "The alternative text of this image, used for accessibility.",
+                                                                                        "name": "altText",
+                                                                                        "type": "text",
+                                                                                        "label": "Alternative Text"
+                                                                                    }
+                                                                                ],
+                                                                                "type": "collection",
+                                                                                "label": "Image"
+                                                                            }
+                                                                        ]
+                                                                    },
+                                                                    {
+                                                                        "label": "Decorated Text",
+                                                                        "value": "decoratedText",
+                                                                        "nested": [
+                                                                            {
+                                                                                "name": "decoratedText",
+                                                                                "spec": [
+                                                                                    {
+                                                                                        "help": "The primary text.",
+                                                                                        "name": "text",
+                                                                                        "type": "text",
+                                                                                        "label": "Text",
+                                                                                        "required": true
+                                                                                    },
+                                                                                    {
+                                                                                        "help": "The wrap text setting.\nIf `true`, the text wraps and displays on multiple lines.\nOtherwise, the text is truncated.\nOnly applies to `Text`, not `Top Label` and `BottomLabel`.",
+                                                                                        "name": "wrapText",
+                                                                                        "type": "boolean",
+                                                                                        "label": "Wrap Text"
+                                                                                    },
+                                                                                    {
+                                                                                        "help": "The text that appears above Text.\nAlways truncates.",
+                                                                                        "name": "topLabel",
+                                                                                        "type": "text",
+                                                                                        "label": "Top Label"
+                                                                                    },
+                                                                                    {
+                                                                                        "help": "The text that appears below Text.\nAlways truncates.",
+                                                                                        "name": "bottomLabel",
+                                                                                        "type": "text",
+                                                                                        "label": "Bottom Label"
+                                                                                    },
+                                                                                    {
+                                                                                        "help": "A switch widget can be clicked to change its state and trigger an action.",
+                                                                                        "name": "switchControl",
+                                                                                        "spec": [
+                                                                                            {
+                                                                                                "help": "The name by which the switch widget is identified in a form input event.",
+                                                                                                "name": "name",
+                                                                                                "type": "text",
+                                                                                                "label": "Name"
+                                                                                            },
+                                                                                            {
+                                                                                                "help": "The value entered by a user, returned as part of a form input event.",
+                                                                                                "name": "value",
+                                                                                                "type": "text",
+                                                                                                "label": "Value"
+                                                                                            },
+                                                                                            {
+                                                                                                "help": "When `true`, the switch is selected.",
+                                                                                                "name": "selected",
+                                                                                                "type": "boolean",
+                                                                                                "label": "Selected"
+                                                                                            },
+                                                                                            {
+                                                                                                "help": "How the switch appears in the user interface.",
+                                                                                                "name": "controlType",
+                                                                                                "type": "select",
+                                                                                                "label": "Control Type",
+                                                                                                "options": [
+                                                                                                    {
+                                                                                                        "label": "Switch",
+                                                                                                        "value": "SWITCH"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "label": "Checkbox",
+                                                                                                        "value": "CHECK_BOX"
+                                                                                                    }
+                                                                                                ]
+                                                                                            }
+                                                                                        ],
+                                                                                        "type": "collection",
+                                                                                        "label": "Switch Control"
+                                                                                    }
+                                                                                ],
+                                                                                "type": "collection",
+                                                                                "label": "Decorated Text"
+                                                                            }
+                                                                        ]
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ],
+                                                        "type": "collection"
+                                                    },
+                                                    "type": "array",
+                                                    "label": "Widgets"
+                                                }
+                                            ],
+                                            "type": "collection"
+                                        },
+                                        "type": "array",
+                                        "label": "Sections"
+                                    }
+                                ],
+                                "type": "collection",
+                                "label": "Card"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Cards"
+                    },
+                    {
+                        "name": "thread",
+                        "spec": [
+                            {
+                                "name": "name",
+                                "type": "text",
+                                "label": "Name"
+                            },
+                            {
+                                "name": "threadKey",
+                                "type": "text",
+                                "label": "Key"
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Thread"
+                    },
+                    {
+                        "name": "fallbackText",
+                        "type": "text",
+                        "label": "Fallback Text"
+                    },
+                    {
+                        "name": "actionResponse",
+                        "spec": [
+                            {
+                                "name": "type",
+                                "type": "select",
+                                "label": "Type",
+                                "validate": {
+                                    "enum": [
+                                        "TYPE_UNSPECIFIED",
+                                        "NEW_MESSAGE",
+                                        "UPDATE_MESSAGE",
+                                        "UPDATE_USER_MESSAGE_CARDS",
+                                        "REQUEST_CONFIG",
+                                        "DIALOG"
+                                    ]
+                                }
+                            },
+                            {
+                                "name": "url",
+                                "type": "url",
+                                "label": "URL"
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Action Response"
+                    },
+                    {
+                        "name": "argumentText",
+                        "type": "text",
+                        "label": "Argument Text"
+                    },
+                    {
+                        "name": "requestId",
+                        "type": "text",
+                        "label": "Request ID"
+                    }
+                ]
+            }
+        }
+    ],
+    "metadata": {
+        "instant": false,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "us2.make.com",
+        "notes": []
+    }
+}

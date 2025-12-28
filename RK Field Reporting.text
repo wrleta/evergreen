@@ -1,0 +1,1198 @@
+RK Field Reporting — Master Architecture Context Pack (drop into future chats)
+(Use this as the “project brief” so we don’t lose intent when chats get long/glitchy.)
+
+1) What this system is
+A phone-first field reporting system for RK that:
+prompts crews (and fallbacks) to submit daily field reports
+
+captures audio + transcript + AI summary + confidence
+
+ties reports to one or multiple jobsites
+
+escalates urgent/critical/emergency issues immediately
+
+keeps an audit trail so nothing is “lost” if someone calls twice or revises
+
+It soft-launches via Twilio voice, then expands to SMS intake + portal links (rkcorp.com) using the same back-end data model.
+
+2) Core goals and constraints
+Goals
+Get reliable daily reporting (scheduled + on-demand)
+
+Reduce office chasing, but keep accountability
+
+Support “multi-stop days” (8 gutter cleans, gift drop-offs, estimator rounds)
+
+Handle “not the assigned reporter” cases safely (delegation / staff assist)
+
+Handle “unknown / unregistered” callers with scrutiny (not blocked, but flagged)
+
+Constraints
+Make.com routers require route filters (no implied logic)
+
+Webhook “priming” matters: Make only remembers fields it has seen
+
+Google Sheets is the system-of-record (fast + auditable), Drive stores recordings
+
+
+3) Canonical data objects (how information should be modeled)
+Think of 3 primary objects, plus supporting tables:
+A) People (Roster)
+A person can be:
+trusted reporter (crew lead / field reporter / office)
+
+limited reporter (crew member)
+
+unknown (not listed)
+
+B) Jobsites and assignments
+Jobsites = master list of sites
+
+Assignments = who is scheduled where today (the roster list)
+
+C) Reports (append-only)
+Each call/SMS submission becomes a report record:
+links to caller + crew + (optional) jobsite(s)
+
+stores transcript, summary, confidence, severity
+
+drives notifications + “reported/pending” status updates
+
+Important design rule:
+Never overwrite a report—append new reports, and update status fields separately.
+
+4) Severity model (recommended)
+Replace binary emergency/non-emergency with deterministic levels:
+FYI: general updates, access notes, gate code, “tomorrow needs…”
+
+Urgent: office action needed today (materials/tools/truck/tire/access blocking)
+
+Critical: safety/compliance disruption (OSHA/police activity, injury risk)
+
+Emergency: active threat/evacuation/enforcement presence/violence
+
+Routing rule: the system uses DTMF choice + AI flagging; emergency can still be a “panic key” override.
+
+5) Google Sheets workbook expectations
+These are the tabs and what they do (names can evolve, but the roles shouldn’t):
+Required (already in your ecosystem)
+Control: office closed / force send / force skip / force dialer toggles by date
+
+Holidays: suppress manifests on holidays
+
+Manifest: today’s scheduled work list (legacy-compatible view)
+
+Call_Logs: call attempt records + status callbacks + recording pointers
+
+ (Scenario 6/7/8 assume this exists.)
+
+Strongly recommended (foundation tabs)
+Settings: phone numbers, portal base URL, thresholds, digest times
+
+Roster_Master (renamed from Staff_Master): people + phone + trust tier + language
+
+Crews: crew definitions + default reporter/lead
+
+Jobsites: canonical site list + access notes (not always emailed)
+
+Assignments: daily crew-to-jobsite roster (powers “press 1/2/3” lists)
+
+For multi-site and audit trail
+Reports (append-only): one row per submitted report (voice/SMS/portal)
+
+Report_Items: one-to-many list (supports “8 sites today” in one report)
+
+Unknown_Callers: unknown numbers + captured name/crew claim + review flag
+
+SMS_Inbox: raw inbound texts + media links + parse status
+
+Portal_Auth / Portal_Sessions: tokens + URLs + access state (future)
+
+
+6) End-to-end data flow
+Voice call flow (soft launch path)
+Twilio inbound call hits Scenario 9 (Inbound IVR Handler)
+
+Scenario 9 decides route (known caller vs unknown; menu choices; worker id entry)
+
+Scenario 9 redirects to Scenario 4 (AI Voice Greeter) to handle the live capture experience
+
+Speech + recording callbacks hit:
+
+Scenario 7 (Audio Logger) for recording file → Drive → update Call_Logs/Reports
+
+Scenario 5 (Speech Processor) for transcription/summary/severity/confidence → update Call_Logs/Reports
+
+Scenario 8 (Office Alerts) pushes immediate alerts (Emergency/Critical/Urgent) and/or queues digest
+
+Scenario 1 (Daily Review Email) and Scenario 2 (Scheduled Dialer) handle scheduled compliance (manifest emails + outbound calls)
+
+Scenario 3 (Redial Webhook) is the “retry” pathway when something fails or staff triggers a re-call
+
+SMS + portal flow (future expansion, same back-end)
+SMS comes in → log raw inbound to SMS_Inbox
+
+AI parses → writes Reports (+ Report_Items)
+
+Portal sends a personalized link → Portal_Sessions
+
+Submissions also become Reports rows (channel=PORTAL)
+
+
+7) Scenario map (what each scenario is supposed to do)
+Here’s the expected job of each one (so we can fix them without losing intent):
+Scenario 1 — Daily Review Email
+Purpose: send staff a branded digest of today’s manifest status (pending vs reported).
+Must do:
+honor Control/Holidays (office closed / suppress / force-send)
+
+compute counts
+
+send only ONE email even if Sheets returns multiple bundles (index guard)
+
+link to “open pending manifest” view (sheet or portal)
+
+include the “work list” (pending rows) + status colors
+
+Scenario 2 — Scheduled Dialer
+Purpose: outbound calls to crews who haven’t reported by cutoff.
+Must do:
+read pending list
+
+respect max attempts per row/person
+
+write call attempts to Call_Logs
+
+update Manifest/Assignments attempt counters + timestamps
+
+trigger status callback path (Scenario 6) and recording path (Scenario 7)
+
+avoid “completed = success” mistakes (AMD matters)
+
+Scenario 3 — Redial Webhook
+Purpose: on-demand retry call (manual or automated) for a specific worker/site.
+Must do:
+accept worker/site identifiers
+
+create call, write Call_Logs row, update attempt counters
+
+keep idempotency (don’t duplicate logs accidentally)
+
+Scenario 4 — AI Voice Greeter
+Purpose: the live “front door” TwiML experience.
+Must do:
+greet with name if identified (Roster_Master match)
+
+confirm recording notice
+
+guide DTMF choices (report type / severity)
+
+set Mode values for downstream (“UnknownMenuDispatch”, “WorkerIdEntered”, “GeneralNote”, etc.)
+
+redirect to the right next step
+
+Scenario 5 — Speech Processor
+Purpose: take speech result, run GPT transcription/summary/flags, write structured output.
+Must do:
+write transcript + summary + confidence into Call_Logs and/or Reports
+
+set Review_Status (Auto-OK vs Needs Review)
+
+set Severity (and preserve DTMF override)
+
+determine if report is “complete enough” to clear pending status
+
+Scenario 6 — Call Status Logger
+Purpose: Twilio status callback handler.
+Must do:
+update Call_Logs with status/duration/answeredBy/recordingSid if present
+
+connect statuses to the correct call attempt (row lookup must be accurate)
+
+Scenario 7 — RK Audio Logger
+Purpose: recording callback handler → download mp3 → upload Drive → write URLs back.
+Must do:
+always coerce mp3 if needed
+
+create month folders (MM.YYYY) if missing
+
+write Recording_URL + Drive file info back to Call_Logs/Reports
+
+Scenario 8 — RK Office Alerts
+Purpose: notify office based on Severity and review needs.
+Must do:
+Emergency: immediate email + immediate chat
+
+Critical: immediate chat + email
+
+Urgent: immediate chat (and include in digest)
+
+FYI: digest only
+
+include transcript + summary + recording link
+
+support “button clicks” (ack/review/escalate/resolve) via webhook links updating the Report row
+
+Scenario 9 — Inbound IVR Handler
+Purpose: routing brain for inbound call events.
+Must do:
+use Mode + Digits + lookups to decide path
+
+support:
+
+known caller fast-path
+
+unknown caller menu
+
+worker id entry
+
+general note path
+
+never execute multiple routes accidentally (router filters required)
+
+use Roster_Master (not Staff_Master)
+
+carry canonical fields (From/To/CallSid/Language/CallLogID/etc.)
+
+
+8) Known “intent gaps” to address next
+These are features your intent clearly wants, but current scenarios likely only partially implement:
+Multi-site reporting in one session
+
+ Solution: Report_Items + “site selection list” + optional “add another site” loop.
+
+Unknown caller scrutiny without blocking
+
+ Solution: trust tier rules + Unknown_Callers capture + Needs Review default.
+
+“General note” not tied to a site
+
+ Solution: Report_Type=General, Jobsite_ID blank, still logged + digest.
+
+Finish criteria (hangup handling)
+
+ Solution: thresholds for transcript length/confidence to mark “complete vs partial,” and only clear pending when complete.
+
+Office “button clicks”
+
+ Solution: action links → webhook → updates Office_Status and Ack_By/Ack_At.
+
+Stable priming and canonical payload contract
+
+ Solution: one universal prime querystring for all webhooks; add any new fields once, not per scenario.
+
+
+9) Testing and operational expectations
+Inbound number (Twilio): +16317803880
+
+Walter test cell: +16313382495
+
+Always test 3 inbound phases:
+
+initial call (Mode empty/unidentified)
+
+unknown menu dispatch (Mode=UnknownMenuDispatch, Digits=1/2/0)
+
+worker id entered (Mode=WorkerIdEntered, Digits=####)
+
+
+10) “Architect-style scope summary”
+Program: Field Reporting System (Phone → AI → Office Routing → Compliance)
+Phases:
+Phone soft launch: inbound IVR + recording + AI summary + emergency alerts
+
+Compliance automation: daily manifest digests + outbound dialing for non-reporters
+
+Office workflow: triage actions + review queue + audit trail
+
+SMS intake: structured SMS submissions + photo support
+
+Portal: per-person link, per-day roster, multi-site checklist, status updates
+
+Interfaces:
+Field → Twilio Voice/SMS
+
+Twilio → Make webhooks
+
+Make → Google Sheets (system-of-record)
+
+Make → Google Drive (audio storage)
+
+Make → Gmail + Google Chat (office notifications)
+
+
+If you want, I can also output this as a single compact “SYSTEM CONTEXT” block you can paste at the top of any new chat and say “use this as spec.”
+PS: If you share a screenshot/export of your current tab headers (especially Call_Logs), I’ll align the “expected column meanings” precisely so scenario fixes don’t drift.
+
+
+make.com ui notes
+
+Got it. I’ll **normalize this into a Make-style, UI-faithful catalog** that you can **paste, scan, or feed back as reference**.
+I’m **not inventing names** — this mirrors **Make’s module picker taxonomy**: **App → Category → Module → Notes**.
+
+Below is the **organized, deduplicated, UI-matching structure**.
+
+---
+
+# 🧠 OPENAI (ChatGPT, Sora, DALL-E, Whisper)
+
+## Chat & Responses
+
+* **Generate a response**
+  Generates a response (responses API).
+* **Get a response**
+  Retrieve an existing response.
+* **Delete a response**
+  Delete a response.
+* **Delete a conversation**
+  Delete an existing conversation.
+* **List input items**
+  Lists input items for a response.
+
+## Chat / Assistant
+
+* **Generate a completion**
+  Generates a chat completion.
+* **Message an assistant**
+  Send messages to an Assistant v2 thread and execute it.
+* **Generate a moderation**
+  Classifies text/images for policy categories.
+
+## Files & Vector Stores
+
+* **Upload a file**
+* **Download a container file**
+* **Add files to a vector store**
+
+## Images
+
+* **Generate images**
+* **Analyze images (Vision)**
+* **Edit images**
+
+## Audio
+
+* **Generate speech from text**
+* **Generate a transcription**
+* **Generate a translation (Whisper)**
+
+## Video (Sora)
+
+* **Generate a video**
+* **Remix a video**
+* **Get a video**
+* **List video jobs**
+* **Delete a video**
+* **Watch video jobs** *(trigger)*
+
+## Batches
+
+* **Create a batch**
+* **Get a batch**
+* **List batches**
+* **Cancel a batch**
+* **Watch batch completed** *(trigger)*
+
+## Other
+
+* **Transform text to structured data**
+* **Make an API call**
+
+---
+
+# 📊 GOOGLE SHEETS
+
+## Rows
+
+* Watch New Rows *(trigger)*
+* Add a Row
+* Update a Row
+* Bulk Add Rows (Advanced)
+* Bulk Update Rows (Advanced)
+* Search Rows
+* Search Rows (Advanced)
+* Clear a Row
+* Delete a Row
+
+## Cells
+
+* Watch Changes *(trigger)*
+* Update a Cell
+* Get a Cell
+* Clear a Cell
+
+## Sheets
+
+* Perform a Function
+* Perform a Function – Responder
+* Add a Sheet
+* Copy a Sheet
+* Rename a Sheet
+* Delete a Sheet
+* List Sheets
+* Get Range Values
+* Clear Values from a Range
+* Add / Delete Conditional Format Rule
+
+## Spreadsheets
+
+* Create a Spreadsheet
+* Create a Spreadsheet from a Template
+
+## Other
+
+* Make an API Call
+
+---
+
+# 🔁 FLOW CONTROL
+
+* **Router**
+* **Iterator**
+* **Repeater**
+* **Array Aggregator**
+
+---
+
+# 🌐 WEBHOOKS
+
+## Triggers
+
+* Custom webhook *(trigger)*
+* Custom mailhook *(trigger)*
+
+## Actions
+
+* Webhook response
+
+---
+
+# 🌍 HTTP
+
+* **Make a request**
+
+---
+
+# 📁 GOOGLE DRIVE
+
+## Files & Folders
+
+* Watch Files in a Folder *(trigger)*
+* Watch All Files *(trigger)*
+* Watch Folders *(trigger)*
+* Search for Files/Folders
+* Download a File
+* Upload a File
+* Create a File from Text
+* Update a File
+* Copy a File
+* Move a File/Folder
+* Move to Trash
+* Delete a File/Folder
+
+## Access
+
+* Get a Share Link
+* Update File/Folder Access
+* Revoke File/Folder Access
+
+## Shared Drives
+
+* Watch Shared Drives *(trigger)*
+* Search Shared Drives
+* Create / Get / Update / Delete Shared Drive
+
+## Revisions
+
+* List File Revisions
+* Get / Update / Delete File Revision
+
+## Other
+
+* Watch Comments *(trigger)*
+* Get Folder ID for Path
+* Get File/Folder Path for ID
+* Make an API Call
+
+---
+
+# 📧 GMAIL
+
+## Triggers
+
+* Watch emails *(trigger)*
+
+## Email
+
+* Send an email
+* Reply to an email
+* Search emails
+* Get an email
+* Copy / Move email
+* Update labels
+* Mark read / unread
+* Delete email
+
+## Drafts
+
+* Create draft
+* Send draft
+
+## Attachments
+
+* List attachments & media
+
+## Other
+
+* Make an API Call
+
+---
+
+# 🧾 JSON / TEXT
+
+## JSON
+
+* Create JSON
+* Parse JSON
+* Transform to JSON
+* Aggregate to JSON
+* Convert JSON to XML
+
+## Text Parser
+
+* Get content from HTML table
+* Get elements from HTML
+* HTML to text
+* Match pattern (Basic / Advanced)
+* Replace
+
+---
+
+# 📞 TWILIO
+
+## Messages
+
+* Watch Messages *(trigger)*
+* Create / List / Get / Delete Message
+* List Message Media
+* Download Media
+
+## Calls
+
+* Watch Calls *(trigger)*
+* Create / List / Get / Delete Call
+
+## Recordings
+
+* Watch Recordings *(trigger)*
+* Download Recording
+* List Recording Transcriptions
+
+## Transcriptions
+
+* Watch Transcriptions *(trigger)*
+
+## Notifications
+
+* Watch Alerts *(trigger)*
+
+## Executions
+
+* Create / Get / Update / Delete Execution
+
+## Other
+
+* Line Type Lookup
+* API Call (General / Studio / Lookup)
+
+---
+
+# 📄 NOTION
+
+## Data Sources / Databases
+
+* Watch Data Source Items *(trigger)*
+* Create / Update / Get Data Source Item
+* Create / Update / Get Database
+* Create / Update Data Source
+
+## Pages
+
+* Watch Objects *(trigger)*
+* Get / Create / Update Page
+
+## Page Content
+
+* Watch Page Contents *(trigger)*
+* List / Get / Append / Update / Delete Content
+
+## Users & Events
+
+* List Users
+* Watch Events *(trigger)*
+
+## Other
+
+* Make an API Call
+
+---
+
+# 🧾 QUICKBOOKS
+
+## Core Events
+
+* New Event *(trigger)*
+
+## Sales
+
+* Invoice / Estimate / Sales Receipt
+* Create / Update / Delete / Send / Download / Search
+
+## Payments
+
+* Create / Update / Delete / Get / Search
+* Watch Payments *(trigger)*
+
+## Purchases
+
+* Bill / Purchase / Vendor / PO
+* Create / Update / Delete / Get / Search
+
+## Customers & Items
+
+* Customer / Item CRUD
+
+## Accounting
+
+* Journal Entry
+* Account
+* Deposit
+* Credit Memo
+* Refund Receipt
+
+## Files
+
+* Upload / Download / Delete Attachment
+
+## Other
+
+* Get My Company
+* Make an API Call
+
+---
+
+# 🤖 MAKE AI TOOLKIT
+
+## Basic AI
+
+* Ask anything
+* Extract information
+* Categorize text
+* Translate text
+* Identify language
+* Summarize text
+* Analyze sentiment
+* Standardize text
+
+## Advanced AI
+
+* Chunk text
+
+---
+
+# 🧠 MAKE AI AGENTS
+
+* Run an Agent
+* Create / Upsert Agent Context (text / file)
+* Get Agent Contexts
+* Delete Agent Context(s)
+
+---
+
+# 📑 PANDADOC
+
+## Documents
+
+* Watch Documents *(trigger)*
+* Search / Get / Create / Download / Delete Document
+
+## Contacts
+
+* List / Get / Create / Update / Delete Contact
+
+## Other
+
+* Make an API Call
+
+---
+
+# 🧩 HUBSPOT CRM
+
+*(This is correctly massive — used selectively)*
+
+Major object groups:
+
+* Contacts
+* Companies
+* Deals
+* Tickets
+* Products
+* Line Items
+* Orders
+* Engagements (Calls, Notes, Tasks, Emails)
+* Files
+* Forms
+* Workflows
+* Subscriptions
+* Associations
+* Events / Notifications
+* Timeline Events
+
+(All with Watch / Create / Update / Get / Search / Delete where applicable)
+
+---
+
+# 🗂 SCENARIOS (MAKE)
+
+* Call a subscenario
+* Start a scenario
+* Return output
+* Customize run name
+
+---
+
+# 📅 GOOGLE CALENDAR
+
+* Watch Events *(trigger)*
+* Search / Get / Create / Update / Delete Event
+* Calendars CRUD
+* Access Control Rules
+* Free/Busy
+* Make an API Call
+
+---
+
+# 🧾 GOOGLE DOCS
+
+* Watch Documents *(trigger)*
+* List Documents
+* Get Content
+* Create Document (HTML / Template)
+* Insert Paragraph / Image
+* Replace Text / Image
+* Download / Delete Document
+* Make Links Clickable
+* Make an API Call
+
+---
+
+# 📱 APPLE iOS
+
+## Triggers
+
+* Watch Calendar
+* Watch Barcode / QR
+* Watch Button
+* Watch Contacts
+* Watch Geofence
+* Watch Photos
+* Watch Reminders
+
+## Actions
+
+* Create Calendar Event
+* Create Contact
+* Create Reminder
+* Send Push Notification
+* Upload Photo
+
+---
+
+# 🧭 GOOGLE MAPS
+
+* Search for Places
+* Get Directions
+* Get Location
+* Get Distance Matrix
+* Get Elevation
+* Get Roads
+* Get Timezone
+* Get Static Map Image
+* Make an API Call
+
+---
+
+# 🧠 CONTEXT NOTE (your comment)
+
+* **Notion / HubSpot / PandaDoc / QuickBooks** → *contextual / optional*
+* **Primary stack (your project)** looks like:
+  **Twilio + OpenAI + Google Sheets + Google Drive + Gmail + Webhooks + Flow Control**
+
+That’s the **clean, UI-matching reference map**.
+
+If you want next:
+
+* 🔍 **“What should I actually use for RK Field Reporting?”**
+* 🧠 **Module pruning for performance & sanity**
+* 🧩 **Scenario architecture map (human-readable)**
+
+Say the word.
+
+
+Yep — this is exactly the kind of “UI pill dictionary” Make needs. I’m going to **cleanly re-organize** what you pasted into **(1) the function drawers** and **(2) module-output pills** with **copy-ready pill strings** and **notes on what’s missing / what merged**.
+
+---
+
+# 1) Gear icon — General functions
+
+## Variables
+
+* `executionId` → `{{executionId}}`
+
+## Functions
+
+* `()` → `{{()}}`
+* `get` → `{{get(; )}}`
+* `if` → `{{if(; ; )}}`
+* `ifempty` → `{{ifempty(; )}}`
+
+## Operators / Logic helpers
+
+* `switch` → `{{switch(; ; )}}`
+* `omit` → `{{omit()}}`
+* `pick` *(you listed it in the merged string but not in the UI list)* → `{{pick()}}`
+* `and` → `&`
+* `or` → `|`
+* `=` `!=`
+
+## Keywords / Literals
+
+* `true` → `{{true}}`
+* `false` → `{{false}}`
+* `ignore` → `{{ignore}}`
+* `null` → `{{null}}`
+* `erase` → `{{erase}}`
+
+### Copy string (your “merged” style)
+
+`{{executionId}}{{()}}{{get(; )}}{{if(; ; )}}{{ifempty(; )}}{{switch(; ; )}}{{omit()}}{{pick()}}= != & | {{true}}{{false}}{{ignore}}{{null}}{{erase}}`
+
+---
+
+# 2) “1^” icon — Math functions
+
+## Variables
+
+* `pi` → `{{pi}}`
+* `random` → `{{random}}`
+
+## Functions
+
+* `average` → `{{average()}}`
+* `abs` → `{{abs()}}`
+* `ceil` → `{{ceil()}}`
+* `floor` → `{{floor()}}`
+* `round` → `{{round()}}`
+* `trunc` → `{{trunc()}}`
+* `sum` → `{{sum()}}`
+* `formatNumber` → `{{formatNumber(; ; ; )}}`
+* `parseNumber` → `{{parseNumber(; )}}`
+* `median` → `{{median()}}`
+* `max` → `{{max()}}`
+* `min` → `{{min()}}`
+* `stdevS` → `{{stdevS()}}`
+* `stdevP` → `{{stdevP()}}`
+
+## Operators
+
+* `*` `/` `%` `mod` `+` `-` `<` `<=` `>` `>=`
+
+### Copy string (clean)
+
+`{{pi}}{{random}}{{average()}}{{abs()}}{{ceil()}}{{floor()}}{{round()}}{{trunc()}}{{sum()}}{{parseNumber(; )}}{{median()}}{{max()}}{{min()}}{{stdevS()}}{{stdevP()}}{{formatNumber(; ; ; )}} * / % mod + - < <= > >=`
+
+---
+
+# 3) “A” icon — Text & binary functions
+
+## Variables
+
+* `uuid` → `{{uuid}}`
+
+## Functions
+
+* `length` → `{{length()}}`
+* `lower` → `{{lower()}}`
+* `upper` → `{{upper()}}`
+* `capitalize` → `{{capitalize()}}`
+* `startcase` → `{{startcase()}}`
+* `trim` → `{{trim()}}`
+* `replace` → `{{replace(; ; )}}`
+* `replaceEmojiCharacters` → `{{replaceEmojiCharacters(; )}}`
+* `substring` → `{{substring(; ; )}}`
+* `indexOf` → `{{indexOf(; )}}`
+* `contains` → `{{contains(; )}}`
+* `split` → `{{split(; )}}`
+* `toBinary` → `{{toBinary()}}`
+* `toString` → `{{toString()}}`
+* `encodeURL` → `{{encodeURL()}}`
+* `decodeURL` → `{{decodeURL()}}`
+* `escapeHTML` → `{{escapeHTML()}}`
+* `escapeMarkdown` → `{{escapeMarkdown()}}`
+* `stripHTML` → `{{stripHTML()}}`
+* Hashing / encoding:
+
+  * `md5` → `{{md5()}}`
+  * `sha1` → `{{sha1()}}`
+  * `sha256` → `{{sha256()}}`
+  * `sha512` → `{{sha512()}}`
+  * `base64` → `{{base64()}}`
+
+## Keywords
+
+* `space` → `{{space}}`
+* `nbsp` → `{{nbsp}}`
+* `tab` → `{{tab}}`
+* `emptystring` → `{{emptystring}}`
+* `newline` → `{{newline}}`
+* `carriagereturn` → `{{carriagereturn}}`
+* `ascii` → `{{ascii}}` *(you had it in the copy string)*
+
+### Copy string (clean)
+
+`{{uuid}}{{length()}}{{lower()}}{{upper()}}{{capitalize()}}{{startcase()}}{{ascii()}}{{replace(; ; )}}{{replaceEmojiCharacters(; )}}{{trim()}}{{substring(; ; )}}{{indexOf(; )}}{{contains(; )}}{{split(; )}}{{toBinary()}}{{toString()}}{{encodeURL()}}{{decodeURL()}}{{escapeHTML()}}{{escapeMarkdown()}}{{stripHTML()}}{{md5()}}{{sha1()}}{{sha256()}}{{sha512()}}{{base64()}}{{space}}{{nbsp}}{{tab}}{{emptystring}}{{newline}}{{carriagereturn}}`
+
+---
+
+# 4) Calendar icon — Date & time functions
+
+## Variables
+
+* `timestamp` → `{{timestamp}}`
+* `now` → `{{now}}`
+
+## Functions
+
+* Add:
+
+  * `addSeconds` → `{{addSeconds(; )}}`
+  * `addMinutes` → `{{addMinutes(; )}}`
+  * `addHours` → `{{addHours(; )}}`
+  * `addDays` → `{{addDays(; )}}`
+  * `addMonths` → `{{addMonths(; )}}`
+  * `addYears` → `{{addYears(; )}}`
+* Set:
+
+  * `setSecond` → `{{setSecond(; )}}`
+  * `setMinute` → `{{setMinute(; )}}`
+  * `setHour` → `{{setHour(; )}}`
+  * `setDay` → `{{setDay(; )}}`
+  * `setDate` → `{{setDate(; )}}`
+  * `setMonth` → `{{setMonth(; )}}`
+  * `setYear` → `{{setYear(; )}}`
+* Format / parse:
+
+  * `formatDate` → `{{formatDate(; )}}`
+  * `parseDate` → `{{parseDate(; )}}`
+
+### Copy string (fixing your `formatDat` OCR cut)
+
+`{{timestamp}}{{now}}{{addSeconds(; )}}{{addMinutes(; )}}{{addHours(; )}}{{addDays(; )}}{{addMonths(; )}}{{addYears(; )}}{{setSecond(; )}}{{setMinute(; )}}{{setHour(; )}}{{setDay(; )}}{{setDate(; )}}{{setMonth(; )}}{{setYear(; )}}{{formatDate(; )}}{{parseDate(; )}}`
+
+**Note (EU dates):** Make is happy with both, but when you parse strings, **be explicit in `formatDate()`/`parseDate()`** so DD.MM.YYYY doesn’t get misread as MM.DD.YYYY.
+
+---
+
+# 5) Table icon — Array functions
+
+## Functions
+
+* `join` → `{{join(; )}}`
+* `length` → `{{length()}}`
+* `keys` → `{{keys()}}`
+* `slice` → `{{slice(; )}}`
+* `merge` → `{{merge(; )}}`
+* `contains` → `{{contains(; )}}`
+* `remove` → `{{remove()}}`
+* `add` → `{{add()}}`
+* `map` → `{{map(; )}}`
+* `shuffle` → `{{shuffle()}}`
+* `sort` → `{{sort()}}`
+* `reverse` → `{{reverse()}}`
+* `first` → `{{first()}}`
+* `last` → `{{last()}}`
+* `flatten` → `{{flatten()}}`
+* `distinct` → `{{distinct()}}`
+* `deduplicate` → `{{deduplicate()}}`
+* `toCollection` → `{{toCollection(; ; )}}`
+* `toArray` → `{{toArray()}}`
+
+## Keywords
+
+* `emptyarray` → `{{emptyarray}}`
+
+### Copy string (clean)
+
+`{{join(; )}}{{length()}}{{keys()}}{{slice(; )}}{{merge(; )}}{{contains(; )}}{{remove()}}{{add()}}{{map(; )}}{{shuffle()}}{{sort()}}{{reverse()}}{{first()}}{{last()}}{{flatten()}}{{distinct()}}{{deduplicate()}}{{toCollection(; ; )}}{{toArray()}}{{emptyarray}}`
+
+---
+
+# 6) Custom + System variables (Make “var.*”)
+
+## Scenario
+
+* Credits consumed → `{{var.scenario.creditsConsumed}}`
+* Data consumed → `{{var.scenario.dataConsumed}}`
+* Execution id → `{{var.scenario.executionId}}`
+* Execution name → `{{var.scenario.executionName}}`
+* Execution started at → `{{var.scenario.executionStartedAt}}`
+* Execution type → `{{var.scenario.executionType}}`
+* Execution URL → `{{var.scenario.executionUrl}}`
+* Scenario id → `{{var.scenario.id}}`
+* Is incomplete execution → `{{var.scenario.isDLQExecution}}`
+* Scenario name → `{{var.scenario.name}}`
+* Operations consumed → `{{var.scenario.operationsConsumed}}`
+* Scenario URL → `{{var.scenario.url}}`
+
+## Team
+
+* Team id → `{{var.team.id}}`
+* Team name → `{{var.team.name}}`
+
+## Organization
+
+* Data left → `{{var.organization.dataLeft}}`
+* Organization id → `{{var.organization.id}}`
+* Organization name → `{{var.organization.name}}`
+* Remaining credits / operations left → `{{var.organization.operationsLeft}}`
+* Zone domain → `{{var.organization.zoneDomain}}`
+
+---
+
+# 7) Module output pills (the “linear” ones)
+
+## A) Google Sheets module output (Module `14`)
+
+**Module:** `14. Sheets - Lookup Worker (Roster_Master: Worker_ID) - Search Rows`
+
+### Make’s “meta” output fields
+
+* Bundle meta:
+
+  * Total number of bundles → `{{14.`**IMTLENGTH**`}}`
+  * Bundle order position → `{{14.`**IMTINDEX**`}}`
+* Row meta:
+
+  * Row number → `{{14.`**ROW_NUMBER**`}}`
+  * Spreadsheet ID → `{{14.`**SPREADSHEET_ID**`}}`
+  * Sheet → `{{14.`**SHEET**`}}`
+
+### Row values (your columns)
+
+Make is showing them as numeric keys (because it’s Search Rows):
+
+* `Worker_ID (A)` → `{{14.`0`}}`
+* `First_Name (B)` → `{{14.`1`}}`
+* `Last_Name (C)` → `{{14.`2`}}`
+* `Display_Name (D)` → `{{14.`3`}}`
+* `Phone_E164 (E)` → `{{14.`4`}}`
+* `Language_Preference (F)` → `{{14.`5`}}`
+* `Crew (G)` → `{{14.`6`}}`
+* `Truck (H)` → `{{14.`7`}}`
+* `Default_Site_1_Name (I)` → `{{14.`8`}}`
+* `Default_Site_1_Address (J)` → `{{14.`9`}}`
+* `Default_Task_1 (K)` → `{{14.`10`}}`
+* `Is_Sub (L)` → `{{14.`11`}}`
+* `Include_in_Employee_Pipelines (M)` → `{{14.`12`}}`
+* `Portal_Token (N)` → `{{14.`13`}}`
+* `Portal_URL (O)` → `{{14.`14`}}`
+* `Portal_Active (P)` → `{{14.`15`}}`
+* `Notes (Q)` → `{{14.`16`}}`
+* Extra columns (R–Z) appear as blanks in the UI and are still addressable if present:
+
+  * `{{14.`17`}}` … `{{14.`25`}}`
+
+**Important:** your copy list includes `{{`14`}}` at the start — that’s just the module “token” and is normal when copying in bulk.
+
+---
+
+## B) Webhook module output (Module `1`)
+
+**Module:** `1. Webhook - Twilio Inbound Call (Scenario 9) - Custom webhook`
+
+### Core Twilio-ish fields (as Make shows them)
+
+* From → `{{1.From}}`
+* To → `{{1.To}}`
+* CallSid → `{{1.CallSid}}`
+* AccountSid → `{{1.AccountSid}}`
+* CallStatus → `{{1.CallStatus}}`
+* ApiVersion → `{{1.ApiVersion}}`
+* Direction → `{{1.Direction}}`
+
+### Location-ish
+
+* FromCity → `{{1.FromCity}}`
+* FromState → `{{1.FromState}}`
+* FromZip → `{{1.FromZip}}`
+* FromCountry → `{{1.FromCountry}}`
+* ToCity → `{{1.ToCity}}`
+* ToState → `{{1.ToState}}`
+* ToZip → `{{1.ToZip}}`
+* ToCountry → `{{1.ToCountry}}`
+
+### Caller / routing
+
+* CallerName → `{{1.CallerName}}`
+* ForwardedFrom → `{{1.ForwardedFrom}}`
+* ParentCallSid → `{{1.ParentCallSid}}`
+* Digits → `{{1.Digits}}`
+
+### Your **universal priming** fields
+
+* Mode → `{{1.Mode}}`
+* WorkerID → `{{1.WorkerID}}`
+* SiteRow → `{{1.SiteRow}}`
+* Language → `{{1.Language}}`
+* CallLogID → `{{1.CallLogID}}`
+* SpeechResult → `{{1.SpeechResult}}`
+* Confidence → `{{1.Confidence}}`
+
+### Recording / status / timing
+
+* RecordingSid → `{{1.RecordingSid}}`
+* RecordingUrl → `{{1.RecordingUrl}}`
+* RecordingStatus → `{{1.RecordingStatus}}`
+* RecordingDuration → `{{1.RecordingDuration}}`
+* AnsweredBy → `{{1.AnsweredBy}}`
+* Timestamp → `{{1.Timestamp}}`
+
+### Errors
+
+* ErrorCode → `{{1.ErrorCode}}`
+* ErrorMessage → `{{1.ErrorMessage}}`
+
+---
+
+# 8) Why your copied “merged lines” happen
+
+When you “copy pills” from the mapper, Make often dumps them as a **single concatenated token stream** (no commas/newlines), like:
+
+`{{pi}}{{random}}{{average()}} ... < <= > >=`
+
+That’s normal: it’s not implying they’re one function — it’s just Make’s copy format.
+
+---
+
+# 9) Likely OCR typos I corrected (so you don’t chase ghosts)
+
+* `formatDat` → **formatDate**
+* `parsedate` → **parseDate**
+* `Length` → Make UI is usually **length** (but copy token is `{{length()}}`)
+* `Shal` → **sha1**
+* `indexof` / `indexof|` → **indexOf**
+* `bundlel` → **bundle1** / “bundle” label
+
+---
+
+If you paste your **actual screenshot of the function drawer** (even one), I can do a **deep UI pass** and confirm whether anything is missing in your Make tenant (some workspaces show slightly different function sets).
