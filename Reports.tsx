@@ -15,8 +15,7 @@ import {
   Calendar,
   User,
   Bell,
-  FileText,
-  Shield,
+  Shield
 } from "lucide-react";
 
 /**
@@ -223,7 +222,7 @@ export default function Block(props: any) {
   }, [allReports, userEmail]);
 
   const getDateMs = (r: any) => {
-    const d = pick(r, ["Submitted_At", "Created_At", "Report_Date", "Date", "Timestamp"]);
+    const d = pick(r, ["Submitted_At_Local", "Last_Updated_At_Local", "Manifest_Date", "Submitted_At", "Created_At", "Report_Date", "Date", "Timestamp"]);
     const t = Date.parse(toText(d));
     return Number.isFinite(t) ? t : 0;
   };
@@ -258,9 +257,9 @@ export default function Block(props: any) {
       ).toLowerCase();
       const type = toText(pick(r, ["Report_Type", "Type", "Category"])).toLowerCase();
       const when = toText(
-        pick(r, ["Submitted_At", "Created_At", "Report_Date", "Date", "Timestamp"])
+        pick(r, ["Submitted_At_Local", "Last_Updated_At_Local", "Manifest_Date", "Submitted_At", "Created_At", "Report_Date", "Date", "Timestamp"])
       ).toLowerCase();
-      const notes = toText(pick(r, ["Summary", "Notes", "Body", "Message"])).toLowerCase();
+      const notes = toText(pick(r, ["Summary_EN", "Report_Text_EN", "Report_Text_Original", "Action_Items_Text", "Office_Notes", "Office_Status", "Summary", "Notes", "Body", "Message"])).toLowerCase();
 
       const st = normalizeStatus(pick(r, ["Status", "Report_Status"]));
       const statusOk = statusFilter ? st === statusFilter : true;
@@ -609,7 +608,7 @@ export default function Block(props: any) {
                   const jobsite =
                     toText(pick(r, ["Jobsite_Name", "Site_Name", "Jobsite", "Site"])) || "Report";
                   const when = toText(
-                    pick(r, ["Submitted_At", "Created_At", "Report_Date", "Date", "Timestamp"])
+                    pick(r, ["Submitted_At_Local", "Last_Updated_At_Local", "Manifest_Date", "Submitted_At", "Created_At", "Report_Date", "Date", "Timestamp"])
                   );
                   const type = toText(pick(r, ["Report_Type", "Type", "Category"])) || "Field";
                   const st = normalizeStatus(pick(r, ["Status", "Report_Status"]));

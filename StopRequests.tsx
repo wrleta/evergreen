@@ -194,7 +194,7 @@ export default function Block(props: any) {
   }, [requests, isOffice, userEmail]);
 
   const getDateMs = (r: any) => {
-    const d = pick(r, ["Submitted_At", "Created_At", "Request_Date", "Date", "Timestamp"]);
+    const d = pick(r, ["Submitted_At_Local", "Reviewed_At_Local", "Manifest_Date", "Submitted_At", "Created_At", "Request_Date", "Date", "Timestamp"]);
     const t = Date.parse(toText(d));
     return Number.isFinite(t) ? t : 0;
   };
@@ -234,8 +234,8 @@ export default function Block(props: any) {
 
       const jobsite = toText(pick(r, ["Jobsite_Name", "Site_Name", "Jobsite", "Site"]));
       const addr = toText(pick(r, ["Jobsite_Address", "Address"]));
-      const when = toText(pick(r, ["Submitted_At", "Created_At", "Request_Date", "Date", "Timestamp"]));
-      const note = toText(pick(r, ["Notes", "Message", "Reason", "Request_Text", "Details"]));
+      const when = toText(pick(r, ["Submitted_At_Local", "Reviewed_At_Local", "Manifest_Date", "Submitted_At", "Created_At", "Request_Date", "Date", "Timestamp"]));
+      const note = toText(pick(r, ["Reason_Text", "Requested_Change_Type", "Requested_Change_JSON", "Office_Notes", "Notes", "Message", "Reason", "Request_Text", "Details"]));
       const worker = toText(pick(r, ["Worker_Name", "Employee_Name", "Name", "Login_Email", "Email"]));
 
       const hay = `${jobsite} ${addr} ${when} ${note} ${isOffice ? worker : ""} ${st}`.toLowerCase();
@@ -248,7 +248,7 @@ export default function Block(props: any) {
     if (id) return nav(`${routes.stopRequestsDetail}?id=${encodeURIComponent(id)}`);
 
     const jobsiteId = toText(pick(r, ["Jobsite_ID", "Site_ID"]));
-    const when = toText(pick(r, ["Submitted_At", "Created_At", "Request_Date", "Date"]));
+    const when = toText(pick(r, ["Submitted_At_Local", "Reviewed_At_Local", "Submitted_At", "Created_At", "Request_Date", "Date"]));
     nav(`${routes.stopRequestsDetail}?jobsiteId=${encodeURIComponent(jobsiteId)}&date=${encodeURIComponent(when)}`);
   };
 
@@ -667,8 +667,8 @@ export default function Block(props: any) {
                   const jobsite = toText(pick(r, ["Jobsite_Name", "Site_Name", "Jobsite", "Site"])) || "Jobsite";
                   const addr = toText(pick(r, ["Jobsite_Address", "Address"]));
                   const when =
-                    toText(pick(r, ["Submitted_At", "Created_At", "Request_Date", "Date", "Timestamp"])) || "—";
-                  const note = toText(pick(r, ["Notes", "Message", "Reason", "Request_Text", "Details"]));
+                    toText(pick(r, ["Submitted_At_Local", "Reviewed_At_Local", "Manifest_Date", "Submitted_At", "Created_At", "Request_Date", "Date", "Timestamp"])) || "—";
+                  const note = toText(pick(r, ["Reason_Text", "Requested_Change_Type", "Requested_Change_JSON", "Office_Notes", "Notes", "Message", "Reason", "Request_Text", "Details"]));
                   const st = normalizeStatus(pick(r, ["Status", "Request_Status"]));
 
                   const workerName =

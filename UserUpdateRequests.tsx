@@ -17,8 +17,7 @@ import {
   Calendar,
   Bell,
   FileText,
-  Shield,
-  User,
+  Shield
 } from "lucide-react";
 
 /**
@@ -181,7 +180,7 @@ export default function Block(props: any) {
   }, [requests, isOffice, userEmail]);
 
   const getDateMs = (r: any) => {
-    const d = pick(r, ["Submitted_At", "Created_At", "Request_Date", "Date", "Timestamp"]);
+    const d = pick(r, ["Submitted_At_Local", "Reviewed_At_Local", "Manifest_Date", "Submitted_At", "Created_At", "Request_Date", "Date", "Timestamp"]);
     const t = Date.parse(toText(d));
     return Number.isFinite(t) ? t : 0;
   };
@@ -225,9 +224,9 @@ export default function Block(props: any) {
       const name = toText(pick(r, ["Worker_Name", "Employee_Name", "Name", "User_Name"]));
       const email = toText(pick(r, ["Login_Email", "Email", "Worker_Email", "User_Email"]));
       const workerId = toText(pick(r, ["Worker_ID", "Employee_ID", "User_ID"]));
-      const when = toText(pick(r, ["Submitted_At", "Created_At", "Request_Date", "Date", "Timestamp"]));
+      const when = toText(pick(r, ["Submitted_At_Local", "Reviewed_At_Local", "Manifest_Date", "Submitted_At", "Created_At", "Request_Date", "Date", "Timestamp"]));
       const changes = toText(
-        pick(r, ["Requested_Changes", "Changes", "Message", "Notes", "Request_Text", "Update_Request", "Details"])
+        pick(r, ["Requested_Field", "Current_Value", "Proposed_Value", "Reason_Text", "Requested_Changes", "Changes", "Message", "Notes", "Request_Text", "Update_Request", "Details"])
       );
 
       const phone = toText(pick(r, ["Requested_Phone", "Phone", "Phone_E164"]));
@@ -244,7 +243,7 @@ export default function Block(props: any) {
     const id = toText(pick(r, ["id", "ID", "Request_ID", "User_Update_Request_ID", "__ROW_NUMBER__"]));
     if (id) return nav(`${routes.userUpdateRequestsDetail}?id=${encodeURIComponent(id)}`);
 
-    const when = toText(pick(r, ["Submitted_At", "Created_At", "Request_Date", "Date"]));
+    const when = toText(pick(r, ["Submitted_At_Local", "Reviewed_At_Local", "Submitted_At", "Created_At", "Request_Date", "Date"]));
     nav(`${routes.userUpdateRequestsDetail}?date=${encodeURIComponent(when)}`);
   };
 
@@ -700,11 +699,11 @@ export default function Block(props: any) {
 
                   const workerId = toText(pick(r, ["Worker_ID", "Employee_ID", "User_ID"])) || "";
                   const when =
-                    toText(pick(r, ["Submitted_At", "Created_At", "Request_Date", "Date", "Timestamp"])) || "—";
+                    toText(pick(r, ["Submitted_At_Local", "Reviewed_At_Local", "Manifest_Date", "Submitted_At", "Created_At", "Request_Date", "Date", "Timestamp"])) || "—";
 
                   const changes =
                     toText(
-                      pick(r, ["Requested_Changes", "Changes", "Message", "Notes", "Request_Text", "Update_Request", "Details"])
+                      pick(r, ["Requested_Field", "Current_Value", "Proposed_Value", "Reason_Text", "Requested_Changes", "Changes", "Message", "Notes", "Request_Text", "Update_Request", "Details"])
                     ) || "";
 
                   const phone = toText(pick(r, ["Requested_Phone", "Phone", "Phone_E164"])) || "";

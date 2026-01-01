@@ -229,8 +229,8 @@ export default function Block({
   const bulletinsFiltered = useMemo(() => {
     if (!qq) return allBulletins;
     return allBulletins.filter((b) => {
-      const title = toText(pick(b, ["Title", "Bulletin_Title", "Subject", "Name"])).toLowerCase();
-      const body = toText(pick(b, ["Message", "Body", "Summary", "Content"])).toLowerCase();
+      const title = toText(pick(b, ["Title", "Title_EN", "Title_ES", "Bulletin_Title", "Subject", "Name"])).toLowerCase();
+      const body = toText(pick(b, ["Text_Short", "Text_Short_EN", "Text_Short_ES", "Body_EN", "Body_ES", "Message", "Body", "Summary", "Content"])).toLowerCase();
       return title.includes(qq) || body.includes(qq);
     });
   }, [allBulletins, qq]);
@@ -594,8 +594,8 @@ export default function Block({
                 <div>
                   {bulletinsTop.map((b: any, idx: number) => {
                     const title =
-                      pick(b, ["Title", "Bulletin_Title", "Subject", "Name"]) || `Bulletin ${idx + 1}`;
-                    const body = pick(b, ["Message", "Body", "Summary", "Content"]);
+                      pick(b, ["Title", "Title_EN", "Title_ES", "Bulletin_Title", "Subject", "Name"]) || `Bulletin ${idx + 1}`;
+                    const body = pick(b, ["Text_Short", "Text_Short_EN", "Text_Short_ES", "Body_EN", "Body_ES", "Message", "Body", "Summary", "Content"]);
                     const isLast = idx === bulletinsTop.length - 1;
 
                     return (

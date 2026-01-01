@@ -227,7 +227,7 @@ export default function Block({ stops = [] }: { stops?: any[] }) {
     ? toText(pick(stop, ["Task_Short", "Task", "Scope_Short", "Assignment_Type"]))
     : "";
   const startTime = stop
-    ? toText(pick(stop, ["Start_Time", "Start", "StartTime", "Time"]))
+    ? toText(pick(stop, ["Scheduled_Time_Local", "Start_Time", "Start", "StartTime", "Time"]))
     : "";
   const rawStatus = stop ? pick(stop, ["Report_Status", "Status"]) : "";
   const status = normalizeStatus(rawStatus);

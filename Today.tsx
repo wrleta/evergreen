@@ -208,8 +208,8 @@ export default function Block({ stops = [] }: { stops?: any[] }) {
     });
 
     filtered.sort((a, b) => {
-      const ta = toText(pick(a, ["Start_Time", "Start", "Time"]));
-      const tb = toText(pick(b, ["Start_Time", "Start", "Time"]));
+      const ta = toText(pick(a, ["Scheduled_Time_Local", "Start_Time", "Start", "Time"]));
+      const tb = toText(pick(b, ["Scheduled_Time_Local", "Start_Time", "Start", "Time"]));
       return ta.localeCompare(tb);
     });
 
@@ -729,7 +729,7 @@ export default function Block({ stops = [] }: { stops?: any[] }) {
                   const jobsiteName = toText(pick(s, ["Jobsite_Name", "Site_Name"])) || `Stop ${idx + 1}`;
                   const addr = toText(pick(s, ["Jobsite_Address", "Address"]));
                   const assignment = toText(pick(s, ["Assignment_Type", "Task", "Type"]));
-                  const start = toText(pick(s, ["Start_Time", "Start", "Time"]));
+                  const start = toText(pick(s, ["Scheduled_Time_Local", "Start_Time", "Start", "Time"]));
                   const status = normalizeStatus(pick(s, ["Report_Status", "Status"]));
                   const lastAt = toText(pick(s, ["Last_Report_At", "LastReportAt"]));
 

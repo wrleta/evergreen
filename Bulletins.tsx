@@ -11,9 +11,8 @@ import {
   CheckCircle2,
   Calendar,
   User,
-  Bell,
   FileText,
-  Shield,
+  Shield
 } from "lucide-react";
 
 /**
@@ -111,7 +110,7 @@ export default function Block(props) {
   };
 
   const getDateMs = (b) => {
-    const d = pick(b, ["Posted_At", "Created_At", "Date", "Timestamp"]);
+    const d = pick(b, ["Published_At_Local", "Updated_At_Local", "Created_At_Local", "Start_At_Local", "Posted_At", "Created_At", "Date", "Timestamp"]);
     const t = Date.parse(toText(d));
     return Number.isFinite(t) ? t : 0;
   };
@@ -240,8 +239,8 @@ export default function Block(props) {
     const id = toText(pick(b, ["id", "ID", "Bulletin_ID", "__ROW_NUMBER__"]));
     if (id) return nav(`${routes.bulletinDetail}?id=${encodeURIComponent(id)}`);
 
-    const title = toText(pick(b, ["Title", "Bulletin_Title", "Subject", "Name"]));
-    const when = toText(pick(b, ["Posted_At", "Created_At", "Date", "Timestamp"]));
+    const title = toText(pick(b, ["Title", "Title_EN", "Title_ES", "Bulletin_Title", "Subject", "Name"]));
+    const when = toText(pick(b, ["Published_At_Local", "Updated_At_Local", "Created_At_Local", "Start_At_Local", "Posted_At", "Created_At", "Date", "Timestamp"]));
     nav(`${routes.bulletinDetail}?title=${encodeURIComponent(title)}&date=${encodeURIComponent(when)}`);
   };
 
@@ -527,11 +526,11 @@ export default function Block(props) {
               <div>
                 {filtered.slice(0, 40).map((b, idx) => {
                   const title =
-                    toText(pick(b, ["Title", "Bulletin_Title", "Subject", "Name"])) ||
+                    toText(pick(b, ["Title", "Title_EN", "Title_ES", "Bulletin_Title", "Subject", "Name"])) ||
                     `Bulletin ${idx + 1}`;
 
-                  const body = toText(pick(b, ["Message", "Body", "Summary", "Content", "Text"]));
-                  const when = toText(pick(b, ["Posted_At", "Created_At", "Date", "Timestamp"]));
+                  const body = toText(pick(b, ["Text_Short", "Text_Short_EN", "Text_Short_ES", "Body_EN", "Body_ES", "Message", "Body", "Summary", "Content", "Text"]));
+                  const when = toText(pick(b, ["Published_At_Local", "Updated_At_Local", "Created_At_Local", "Start_At_Local", "Posted_At", "Created_At", "Date", "Timestamp"]));
                   const unread = !normalizeRead(b);
 
                   const isLast = idx === Math.min(filtered.length, 40) - 1;

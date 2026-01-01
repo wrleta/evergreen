@@ -190,7 +190,7 @@ export default function Block(props) {
   const sorted = useMemo(() => {
     const arr = [...all];
     const getDate = (x) => {
-      const d = pick(x, ["Created_At", "Submitted_At", "Date", "Timestamp"]);
+      const d = pick(x, ["Submitted_At_Local", "Last_Updated_At_Local", "Created_At_Local", "Manifest_Date", "Created_At", "Submitted_At", "Date", "Timestamp"]);
       const t = Date.parse(toText(d));
       return Number.isFinite(t) ? t : 0;
     };

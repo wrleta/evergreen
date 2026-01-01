@@ -204,7 +204,7 @@ export default function Block(props: any) {
   }, [requests, isOffice, userEmail]);
 
   const getDateMs = (r: any) => {
-    const d = pick(r, ["Submitted_At", "Created_At", "Request_Date", "Date", "Timestamp"]);
+    const d = pick(r, ["Submitted_At_Local", "Reviewed_At_Local", "Manifest_Date", "Submitted_At", "Created_At", "Request_Date", "Date", "Timestamp"]);
     const t = Date.parse(toText(d));
     return Number.isFinite(t) ? t : 0;
   };
@@ -248,8 +248,8 @@ export default function Block(props: any) {
       const jobsite = toText(pick(r, ["Jobsite_Name", "Site_Name", "Jobsite", "Site"]));
       const addr = toText(pick(r, ["Jobsite_Address", "Address"]));
       const jobsiteId = toText(pick(r, ["Jobsite_ID", "Site_ID"]));
-      const when = toText(pick(r, ["Submitted_At", "Created_At", "Request_Date", "Date", "Timestamp"]));
-      const changes = toText(pick(r, ["Requested_Changes", "Changes", "Notes", "Message", "Details"]));
+      const when = toText(pick(r, ["Submitted_At_Local", "Reviewed_At_Local", "Manifest_Date", "Submitted_At", "Created_At", "Request_Date", "Date", "Timestamp"]));
+      const changes = toText(pick(r, ["Requested_Field", "Current_Value", "Proposed_Value", "Reason_Text", "Requested_Changes", "Changes", "Notes", "Message", "Details"]));
       const worker = toText(pick(r, ["Worker_Name", "Employee_Name", "Name", "Login_Email", "Email"]));
 
       const hay = `${jobsite} ${addr} ${jobsiteId} ${when} ${changes} ${st} ${isOffice ? worker : ""}`.toLowerCase();
@@ -262,7 +262,7 @@ export default function Block(props: any) {
     if (id) return nav(`${routes.jobsiteEditRequestsDetail}?id=${encodeURIComponent(id)}`);
 
     const jobsiteId = toText(pick(r, ["Jobsite_ID", "Site_ID"]));
-    const when = toText(pick(r, ["Submitted_At", "Created_At", "Request_Date", "Date"]));
+    const when = toText(pick(r, ["Submitted_At_Local", "Reviewed_At_Local", "Submitted_At", "Created_At", "Request_Date", "Date"]));
     nav(`${routes.jobsiteEditRequestsDetail}?jobsiteId=${encodeURIComponent(jobsiteId)}&date=${encodeURIComponent(when)}`);
   };
 
@@ -695,8 +695,8 @@ export default function Block(props: any) {
                   const addr = toText(pick(r, ["Jobsite_Address", "Address"]));
                   const jobsiteId = toText(pick(r, ["Jobsite_ID", "Site_ID"]));
                   const when =
-                    toText(pick(r, ["Submitted_At", "Created_At", "Request_Date", "Date", "Timestamp"])) || "—";
-                  const changes = toText(pick(r, ["Requested_Changes", "Changes", "Notes", "Message", "Details"]));
+                    toText(pick(r, ["Submitted_At_Local", "Reviewed_At_Local", "Manifest_Date", "Submitted_At", "Created_At", "Request_Date", "Date", "Timestamp"])) || "—";
+                  const changes = toText(pick(r, ["Requested_Field", "Current_Value", "Proposed_Value", "Reason_Text", "Requested_Changes", "Changes", "Notes", "Message", "Details"]));
                   const st = normalizeStatus(pick(r, ["Status", "Request_Status"]));
 
                   const workerName =
