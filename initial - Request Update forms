@@ -1,0 +1,1234 @@
+Perfect — here’s the **save-worthy “source of truth” summary** of what you just built, with **only block #1 and #3 as TSX** and the **middle block as Softr UI Form** (writeback). This is written so you can paste into notes / GitHub README.
+
+---
+
+# Global rules (applies to all 3 submit pages)
+
+**Page layout (3 blocks, same pattern everywhere):**
+
+1. **Header TSX** (banner + title + nav row)
+2. **Softr native Form block** (this is the writeback UI)
+3. **Quick Links TSX** (footer-style navigation)
+
+**Design rules:**
+
+* App background is global `#0B1020` (Softr/App settings). TSX blocks are transparent/glassy.
+* **Only the first block** includes the banner (RK tile + FIELD REPORTING SYSTEM + avatar → `/profile` + accent line).
+* Use one-card layouts; avoid nested cards.
+* Standard container: `max-w-5xl px-4 sm:px-6 py-6 space-y-5` and bottom padding uses `env(safe-area-inset-bottom)`.
+* Navigation uses `window.location.href`.
+
+**Context passing strategy:**
+
+* TSX links/buttons pass context into the form pages using **query params** (camelCase).
+* Softr Form Hidden Fields read those values via **URL parameter** source (exact key names).
+* You also store “receipt context” using:
+
+  * **Current Time** (timestamp)
+  * **Page URL** (full URL including params)
+
+**Naming convention (you chose camelCase):**
+
+* `crewName`
+* `crewId`
+* `workerId` (optional)
+* `jobsiteId`
+* `jobsiteName` (optional)
+* `stopId` (optional)
+* `manifestDate` (optional)
+
+---
+
+# Page 1 — Stop Request submit page
+
+**Page:** `/stop-request-new`
+**Blocks:**
+
+1. Header TSX (Source: `Portal_Users`, filter current user + active)
+2. Softr Form block (writes to `Portal_Stop_Requests`)
+3. Quick Links TSX (Source: `Portal_Users`, same filter)
+
+### Form (UI build) — fields + mapping
+
+**Visible fields (worker types):**
+
+* **Reason / Category** (Dropdown) → `Requested_Change_Type` (or your equivalent)
+* **Details** (Long text, required) → `Reason_Text` (or your “details” column)
+
+**Auto-collected (logged-in):**
+
+* **Email (logged-in)** → `Login_Email`
+* **Name (logged-in)** → `Worker_Name` *(only if you added it / have it)*
+
+**Hidden defaults:**
+
+* `Status` = `Open`
+* `Submitted_Via` = `Portal`
+
+**Hidden context from URL parameter (optional but recommended):**
+
+* `Crew_ID` ← URL parameter `crewId`
+* `Crew_Name` ← URL parameter `crewName`
+* `Jobsite_ID` ← URL parameter `jobsiteId`
+* `Stop_ID` ← URL parameter `stopId`
+* `Manifest_Date` ← URL parameter `manifestDate`
+
+**Receipt fields (recommended):**
+
+* `Submitted_At_Local` = **Current Time**
+* `Submitted_Page_URL` = **Page URL**
+
+### Form ending
+
+* Success message: **`Submitted, Thank You! — ¡gracias!`**
+* Action: **Open page**
+* Redirect to: **`/stop-requests`**
+
+---
+
+# Page 2 — Jobsite Edit submit page
+
+**Page:** `/jobsite-edit-new`
+**Blocks:**
+
+1. Header TSX (Source: `Portal_Users`)
+2. Softr Form block → writes to `Portal_Jobsite_Edit_Requests`
+3. Quick Links TSX (Source: `Portal_Users`)
+
+### Header title requirement (exact)
+
+**Title line:** `Jobsite Edit — Request | solicitar actualizacion a la obra`
+(Spanish appears as secondary; muted/gray can be italic.)
+
+### Form (UI build) — fields + mapping
+
+**Auto-collected (logged-in):**
+
+* Email (logged-in) → `Login_Email`
+* Name (logged-in) → `Worker_Name` *(if present)*
+
+**Visible fields:**
+
+* **What needs to change?** (Long text, required) → `Proposed_Value` *(or your “Requested_Changes/Changes” column if you renamed it)*
+* Optional **Requested Field** (Dropdown) → `Requested_Field`
+* Optional **Current Value** → `Current_Value`
+* Optional **Reason/Notes** → `Reason_Text`
+
+**Hidden context:**
+
+* `Jobsite_ID` ← URL parameter `jobsiteId`
+  *(Jobsite selector only if you are NOT passing `jobsiteId` in the URL.)*
+
+**Hidden defaults:**
+
+* `Status` = `Open`
+* `Submitted_Via` = `Portal`
+
+**Receipt fields:**
+
+* `Submitted_At_Local` = Current Time
+* `Submitted_Page_URL` = Page URL
+
+### Form ending
+
+* Success message: **`Submitted, Thank You! — ¡gracias!`**
+* Action: **Open page**
+* Redirect to: **`/jobsite-edit-requests`**
+
+---
+
+# Page 3 — User Update submit page
+
+**Page:** `/user-update-new`
+**Blocks:**
+
+1. Header TSX (Source: `Portal_Users`)
+2. Softr Form block → writes to `Portal_User_Update_Requests`
+3. Quick Links TSX
+
+### Form (UI build) — fields + mapping
+
+**Auto-collected (logged-in):**
+
+* Email (logged-in) → `Login_Email`
+* Name (logged-in) → `Worker_Name` *(if present)*
+
+**Visible fields:**
+
+* **What changed?** (Long text, required) → `Proposed_Value` *(or your `Update_Request / Changes` column if you renamed it)*
+* Optional: **Phone** → `Proposed_Phone` *(only if you track separate phone column)*
+* Optional: **Role** → `Proposed_Role` *(only if you track separate role column)*
+* Optional: **Requested Field** dropdown → `Requested_Field` (helps office triage)
+* Optional: **Current Value** → `Current_Value`
+* Optional: **Notes** → `Reason_Text`
+
+**Hidden defaults:**
+
+* `Status` = `Open`
+* `Submitted_Via` = `Portal`
+
+**Receipt fields:**
+
+* `Submitted_At_Local` = Current Time
+* `Submitted_Page_URL` = Page URL
+
+### Form ending
+
+* Success message: **`Submitted, Thank You! — ¡gracias!`**
+* Action: **Open page**
+* Redirect to: **`/user-update-requests`**
+
+---
+
+# URL param “how-to” (what you actually did)
+
+When you want the form to prefill hidden context, your TSX button builds a link like:
+
+`/jobsite-edit-new?jobsiteId=J123&crewId=7&crewName=Crew%20A`
+
+Then in Softr Hidden Fields:
+
+* Source = **URL parameter**
+* Key = **exactly** `jobsiteId`, `crewId`, `crewName` (case-sensitive)
+
+And for “receipt logging”:
+
+* Source = **Current Time** (timestamp column)
+* Source = **Page URL** (URL receipt column)
+
+---
+
+If you want, paste the **exact column names you ended up using** in each request table (because you mentioned “Changes / Update_Request”) and I’ll give you a clean “final mapping table” that exactly matches your sheet headers with no aliases.
+
+New stop Resquest block 1 of 3, 2 is form made in softr ui, and 3 are quicklinks
+
+import { useMemo, type CSSProperties } from "react";
+import { useCurrentUser } from "@/lib/user";
+import { Card, CardContent } from "@/components/ui/card";
+import { ChevronLeft, Home, Calendar, Info, User } from "lucide-react";
+
+export default function Block() {
+  const user = useCurrentUser();
+
+  const routes = {
+    back: "/stop-requests",
+    home: "/home",
+    today: "/today",
+    faq: "/faq",
+    profile: "/profile",
+  };
+
+  const nav = (href: string) => (window.location.href = href);
+  const toText = (v: any) => (v === undefined || v === null ? "" : String(v));
+
+  // Robust office detection (evergreen pattern)
+  const roleStrings = useMemo(() => {
+    const out: string[] = [];
+    const add = (v: any) => {
+      if (!v) return;
+      if (Array.isArray(v)) v.forEach(add);
+      else if (typeof v === "object") {
+        if (v?.name) out.push(String(v.name));
+        if (v?.title) out.push(String(v.title));
+      } else out.push(String(v));
+    };
+
+    add((user as any)?.UserGroup);
+    add((user as any)?.userGroup);
+    add((user as any)?.Role);
+    add((user as any)?.role);
+    add((user as any)?.Auth_Level);
+    add((user as any)?.auth_level);
+    add((user as any)?.groups);
+
+    try {
+      const w: any = typeof window !== "undefined" ? window : null;
+      const lu = w?.logged_in_user;
+      add(lu?.UserGroup);
+      add(lu?.Role);
+      add(lu?.Auth_Level);
+      add(lu?.groups);
+    } catch {}
+
+    return out.filter(Boolean);
+  }, [user]);
+
+  const isOffice = useMemo(() => {
+    const val = roleStrings.join(" ").toLowerCase();
+    return (
+      val.includes("office") ||
+      val.includes("admin") ||
+      val.includes("manager") ||
+      val.includes("dispatcher") ||
+      val.includes("supervisor") ||
+      val.includes("office+")
+    );
+  }, [roleStrings]);
+
+  const displayName = useMemo(() => {
+    const name = toText((user as any)?.name || (user as any)?.fullName);
+    if (name) return name;
+    const em = toText((user as any)?.email);
+    return em ? em.split("@")[0] : "Field Reporter";
+  }, [user]);
+
+  // Optional context from URL
+  const ctx = useMemo(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const stopId = sp.get("stop_id") || sp.get("stopId") || "";
+      const jobsiteId = sp.get("jobsite_id") || sp.get("jobsiteId") || sp.get("site_id") || "";
+      const jobsiteName = sp.get("jobsite_name") || sp.get("jobsiteName") || sp.get("site_name") || "";
+      const manifestDate = sp.get("date") || sp.get("manifest_date") || "";
+      return { stopId, jobsiteId, jobsiteName, manifestDate };
+    } catch {
+      return { stopId: "", jobsiteId: "", jobsiteName: "", manifestDate: "" };
+    }
+  }, []);
+
+  // If not logged in, keep it quiet (visibility should usually prevent this anyway)
+  if (!user) return null;
+
+  // ---- visuals (NO full page bg; Softr/App provides continuity) ----
+  const banner: CSSProperties = {
+    background:
+      "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.00) 60%), #000",
+    borderBottom: "1px solid rgba(255,255,255,0.08)",
+  };
+
+  const accentLine: CSSProperties = {
+    height: 2,
+    background:
+      "linear-gradient(90deg, rgba(0,233,239,0.95), rgba(0,233,239,0.25) 35%, rgba(251,191,36,0.22) 70%, rgba(251,191,36,0.70))",
+    boxShadow: "0 0 0 1px rgba(255,255,255,0.04) inset, 0 6px 20px rgba(0,233,239,0.10)",
+  };
+
+  const cardStyle: CSSProperties = {
+    background:
+      "linear-gradient(180deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.028) 100%)",
+    border: "1px solid rgba(255,255,255,0.10)",
+    boxShadow: "0 18px 52px rgba(0,0,0,0.40)",
+    backdropFilter: "blur(8px)",
+  };
+
+  const thinGray: CSSProperties = { color: "rgba(229,231,235,0.55)", fontWeight: 500 };
+
+  // IMPORTANT: Spanish is NOT italic in the title per your note here
+  const esGrayNoItalic: CSSProperties = { ...thinGray, fontStyle: "normal" };
+
+  const titleWrap: CSSProperties = {
+    whiteSpace: "normal",
+    overflowWrap: "anywhere",
+    wordBreak: "break-word",
+    lineHeight: 1.15,
+  };
+
+  const wrap: CSSProperties = { paddingTop: 12, paddingBottom: 12 };
+
+  // Nav button style (4-up, centered icon+text, equidistant like Today/Reports)
+  const navBtn: CSSProperties = {
+    height: 40,
+    borderRadius: 12,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    fontWeight: 800,
+    fontSize: 13,
+    color: "rgba(0,233,239,0.96)",
+    border: "1px solid rgba(255,255,255,0.10)",
+    background: "transparent",
+    cursor: "pointer",
+  };
+
+  return (
+    <div className="w-full" style={{ color: "#E5E7EB", background: "transparent" }}>
+      {/* Banner (ONLY in first block on page) */}
+      <header style={banner}>
+        <div className="mx-auto w-full max-w-5xl px-4 sm:px-6">
+          <div className="flex items-center justify-between py-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className="w-11 h-11 rounded-2xl flex items-center justify-center font-extrabold tracking-wide"
+                style={{
+                  background: "linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.05))",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  color: "rgba(0,233,239,0.95)",
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
+                }}
+              >
+                RK
+              </div>
+
+              <div className="min-w-0">
+                <div
+                  className="text-[12px] uppercase tracking-[0.22em] leading-tight"
+                  style={{ color: "rgba(229,231,235,0.86)" }}
+                >
+                  FIELD REPORTING SYSTEM
+                </div>
+                <div
+                  style={{
+                    marginTop: 6,
+                    height: 1,
+                    width: 180,
+                    background: "linear-gradient(90deg, rgba(0,233,239,0.25), rgba(255,255,255,0.00))",
+                    opacity: 0.9,
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {isOffice ? (
+                <span
+                  className="px-3 py-1 rounded-full text-xs font-semibold"
+                  style={{
+                    background: "rgba(251,191,36,0.14)",
+                    border: "1px solid rgba(251,191,36,0.28)",
+                    color: "rgba(251,191,36,0.95)",
+                  }}
+                >
+                  Office+
+                </span>
+              ) : null}
+
+              <button
+                type="button"
+                className="w-11 h-11 rounded-full flex items-center justify-center overflow-hidden"
+                style={{
+                  background: "rgba(255,255,255,0.10)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  boxShadow: "0 12px 34px rgba(0,0,0,0.55)",
+                }}
+                aria-label="Profile"
+                title={displayName}
+                onClick={() => nav(routes.profile)}
+              >
+                {(user as any)?.avatarUrl ? (
+                  <img src={(user as any).avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-5 h-5" />
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div style={accentLine} />
+      </header>
+
+      {/* Title + nav (content-height) */}
+      <div className="mx-auto w-full max-w-5xl px-4 sm:px-6" style={wrap}>
+        <div className="space-y-3">
+          {/* Title (wraps; no ellipsis) */}
+          <div className="min-w-0">
+            <div className="text-2xl font-extrabold" style={titleWrap}>
+              New Stop — Request <span style={thinGray}>|</span>{" "}
+              <span style={esGrayNoItalic}>solicitar otra/nueva obra</span>
+            </div>
+          </div>
+
+          {/* Optional context (kept, but quiet) */}
+          {ctx.stopId || ctx.jobsiteId || ctx.jobsiteName || ctx.manifestDate ? (
+            <Card className="rounded-2xl" style={cardStyle}>
+              <CardContent className="p-4">
+                <div className="flex flex-wrap gap-2">
+                  {ctx.jobsiteName ? (
+                    <span
+                      className="px-3 py-1 rounded-full text-xs font-semibold"
+                      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)" }}
+                    >
+                      {ctx.jobsiteName}
+                    </span>
+                  ) : null}
+                  {ctx.stopId ? (
+                    <span
+                      className="px-3 py-1 rounded-full text-xs font-semibold"
+                      style={{
+                        background: "rgba(0,233,239,0.10)",
+                        border: "1px solid rgba(0,233,239,0.22)",
+                        color: "rgba(0,233,239,0.95)",
+                      }}
+                    >
+                      stop_id: {ctx.stopId}
+                    </span>
+                  ) : null}
+                  {ctx.jobsiteId ? (
+                    <span
+                      className="px-3 py-1 rounded-full text-xs font-semibold"
+                      style={{
+                        background: "rgba(251,191,36,0.10)",
+                        border: "1px solid rgba(251,191,36,0.22)",
+                        color: "rgba(251,191,36,0.95)",
+                      }}
+                    >
+                      jobsite_id: {ctx.jobsiteId}
+                    </span>
+                  ) : null}
+                  {ctx.manifestDate ? (
+                    <span
+                      className="px-3 py-1 rounded-full text-xs font-semibold"
+                      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)" }}
+                    >
+                      {ctx.manifestDate}
+                    </span>
+                  ) : null}
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {/* Nav row (4 equal buttons, centered like Today/Reports) */}
+          <div className="grid grid-cols-4 gap-2" style={{ marginTop: 2 }}>
+            <button type="button" style={navBtn} onClick={() => nav(routes.back)}>
+              <ChevronLeft className="w-4 h-4" />
+              Back
+            </button>
+
+            <button type="button" style={navBtn} onClick={() => nav(routes.home)}>
+              <Home className="w-4 h-4" />
+              Home
+            </button>
+
+            <button type="button" style={navBtn} onClick={() => nav(routes.today)}>
+              <Calendar className="w-4 h-4" />
+              Today
+            </button>
+
+            <button type="button" style={navBtn} onClick={() => nav(routes.faq)}>
+              <Info className="w-4 h-4" />
+              FAQ
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+Jobsite Resquest block 1 of 3, 2 is form made in softr ui, and 3 are quicklinks
+
+import { useMemo, type CSSProperties } from "react";
+import { useCurrentUser } from "@/lib/user";
+import { Card, CardContent } from "@/components/ui/card";
+import { ChevronLeft, Home, Calendar, Info, User, Building2 } from "lucide-react";
+
+export default function Block() {
+  const user = useCurrentUser();
+
+  const routes = {
+    back: "/jobsite-edit-requests",
+    home: "/home",
+    today: "/today",
+    faq: "/faq",
+    profile: "/profile",
+  };
+
+  const nav = (href: string) => (window.location.href = href);
+  const toText = (v: any) => (v === undefined || v === null ? "" : String(v));
+
+  // Robust office detection (evergreen)
+  const roleStrings = useMemo(() => {
+    const out: string[] = [];
+    const add = (v: any) => {
+      if (!v) return;
+      if (Array.isArray(v)) v.forEach(add);
+      else if (typeof v === "object") {
+        if (v?.name) out.push(String(v.name));
+        if (v?.title) out.push(String(v.title));
+      } else out.push(String(v));
+    };
+
+    add((user as any)?.UserGroup);
+    add((user as any)?.userGroup);
+    add((user as any)?.Role);
+    add((user as any)?.role);
+    add((user as any)?.Auth_Level);
+    add((user as any)?.auth_level);
+    add((user as any)?.groups);
+
+    try {
+      const w: any = typeof window !== "undefined" ? window : null;
+      const lu = w?.logged_in_user;
+      add(lu?.UserGroup);
+      add(lu?.Role);
+      add(lu?.Auth_Level);
+      add(lu?.groups);
+    } catch {}
+
+    return out.filter(Boolean);
+  }, [user]);
+
+  const isOffice = useMemo(() => {
+    const val = roleStrings.join(" ").toLowerCase();
+    return (
+      val.includes("office") ||
+      val.includes("admin") ||
+      val.includes("manager") ||
+      val.includes("dispatcher") ||
+      val.includes("supervisor") ||
+      val.includes("office+")
+    );
+  }, [roleStrings]);
+
+  const displayName = useMemo(() => {
+    const name = toText((user as any)?.name || (user as any)?.fullName);
+    if (name) return name;
+    const em = toText((user as any)?.email);
+    return em ? em.split("@")[0] : "Field Reporter";
+  }, [user]);
+
+  // Context from URL (optional)
+  const ctx = useMemo(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const jobsiteId = sp.get("jobsite_id") || sp.get("jobsiteId") || sp.get("site_id") || "";
+      const jobsiteName = sp.get("jobsite_name") || sp.get("jobsiteName") || sp.get("site_name") || "";
+      const manifestDate = sp.get("date") || sp.get("manifest_date") || "";
+      return { jobsiteId, jobsiteName, manifestDate };
+    } catch {
+      return { jobsiteId: "", jobsiteName: "", manifestDate: "" };
+    }
+  }, []);
+
+  if (!user) return null;
+
+  // ---- visuals (NO full page bg; Softr/App provides continuity) ----
+  const banner: CSSProperties = {
+    background:
+      "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.00) 60%), #000",
+    borderBottom: "1px solid rgba(255,255,255,0.08)",
+  };
+
+  const accentLine: CSSProperties = {
+    height: 2,
+    background:
+      "linear-gradient(90deg, rgba(0,233,239,0.95), rgba(0,233,239,0.25) 35%, rgba(251,191,36,0.22) 70%, rgba(251,191,36,0.70))",
+    boxShadow: "0 0 0 1px rgba(255,255,255,0.04) inset, 0 6px 20px rgba(0,233,239,0.10)",
+  };
+
+  const cardStyle: CSSProperties = {
+    background:
+      "linear-gradient(180deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.028) 100%)",
+    border: "1px solid rgba(255,255,255,0.10)",
+    boxShadow: "0 18px 52px rgba(0,0,0,0.40)",
+    backdropFilter: "blur(8px)",
+  };
+
+  const thinGray: CSSProperties = { color: "rgba(229,231,235,0.55)", fontWeight: 500 };
+  const thinGrayItalic: CSSProperties = { ...thinGray, fontStyle: "italic" };
+
+  const titleWrap: CSSProperties = {
+    whiteSpace: "normal",
+    overflowWrap: "anywhere",
+    wordBreak: "break-word",
+    lineHeight: 1.15,
+  };
+
+  const wrap: CSSProperties = { paddingTop: 12, paddingBottom: 12 };
+
+  // Nav button style (4-up, centered icon+text)
+  const navBtn: CSSProperties = {
+    height: 40,
+    borderRadius: 12,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    fontWeight: 800,
+    fontSize: 13,
+    color: "rgba(0,233,239,0.96)",
+    border: "1px solid rgba(255,255,255,0.10)",
+    background: "transparent",
+    cursor: "pointer",
+  };
+
+  return (
+    <div className="w-full" style={{ color: "#E5E7EB", background: "transparent" }}>
+      {/* Banner (ONLY in first block on page) */}
+      <header style={banner}>
+        <div className="mx-auto w-full max-w-5xl px-4 sm:px-6">
+          <div className="flex items-center justify-between py-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className="w-11 h-11 rounded-2xl flex items-center justify-center font-extrabold tracking-wide"
+                style={{
+                  background: "linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.05))",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  color: "rgba(0,233,239,0.95)",
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
+                }}
+              >
+                RK
+              </div>
+
+              <div className="min-w-0">
+                <div
+                  className="text-[12px] uppercase tracking-[0.22em] leading-tight"
+                  style={{ color: "rgba(229,231,235,0.86)" }}
+                >
+                  FIELD REPORTING SYSTEM
+                </div>
+                <div
+                  style={{
+                    marginTop: 6,
+                    height: 1,
+                    width: 180,
+                    background: "linear-gradient(90deg, rgba(0,233,239,0.25), rgba(255,255,255,0.00))",
+                    opacity: 0.9,
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {isOffice ? (
+                <span
+                  className="px-3 py-1 rounded-full text-xs font-semibold"
+                  style={{
+                    background: "rgba(251,191,36,0.14)",
+                    border: "1px solid rgba(251,191,36,0.28)",
+                    color: "rgba(251,191,36,0.95)",
+                  }}
+                >
+                  Office+
+                </span>
+              ) : null}
+
+              <button
+                type="button"
+                className="w-11 h-11 rounded-full flex items-center justify-center overflow-hidden"
+                style={{
+                  background: "rgba(255,255,255,0.10)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  boxShadow: "0 12px 34px rgba(0,0,0,0.55)",
+                }}
+                aria-label="Profile"
+                title={displayName}
+                onClick={() => nav(routes.profile)}
+              >
+                {(user as any)?.avatarUrl ? (
+                  <img src={(user as any).avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-5 h-5" />
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div style={accentLine} />
+      </header>
+
+      {/* Title + nav */}
+      <div className="mx-auto w-full max-w-5xl px-4 sm:px-6" style={wrap}>
+        <div className="space-y-3">
+          <div className="min-w-0">
+            <div className="text-2xl font-extrabold" style={titleWrap}>
+              Jobsite Edit — Request <span style={thinGray}>|</span>{" "}
+              <span style={thinGrayItalic}>solicitar actualizacion a la obra</span>
+            </div>
+          </div>
+
+          {/* Context chips (quiet) */}
+          {ctx.jobsiteId || ctx.jobsiteName || ctx.manifestDate ? (
+            <Card className="rounded-2xl" style={cardStyle}>
+              <CardContent className="p-4">
+                <div className="flex flex-wrap gap-2">
+                  {ctx.jobsiteName ? (
+                    <span
+                      className="px-3 py-1 rounded-full text-xs font-semibold"
+                      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)" }}
+                    >
+                      {ctx.jobsiteName}
+                    </span>
+                  ) : null}
+                  {ctx.jobsiteId ? (
+                    <span
+                      className="px-3 py-1 rounded-full text-xs font-semibold"
+                      style={{
+                        background: "rgba(0,233,239,0.10)",
+                        border: "1px solid rgba(0,233,239,0.22)",
+                        color: "rgba(0,233,239,0.95)",
+                      }}
+                    >
+                      jobsite_id: {ctx.jobsiteId}
+                    </span>
+                  ) : null}
+                  {ctx.manifestDate ? (
+                    <span
+                      className="px-3 py-1 rounded-full text-xs font-semibold"
+                      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)" }}
+                    >
+                      {ctx.manifestDate}
+                    </span>
+                  ) : null}
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {/* Nav row (4 equal buttons) */}
+          <div className="grid grid-cols-4 gap-2" style={{ marginTop: 2 }}>
+            <button type="button" style={navBtn} onClick={() => nav(routes.back)}>
+              <ChevronLeft className="w-4 h-4" />
+              Back
+            </button>
+
+            <button type="button" style={navBtn} onClick={() => nav(routes.home)}>
+              <Home className="w-4 h-4" />
+              Home
+            </button>
+
+            <button type="button" style={navBtn} onClick={() => nav(routes.today)}>
+              <Calendar className="w-4 h-4" />
+              Today
+            </button>
+
+            <button type="button" style={navBtn} onClick={() => nav(routes.faq)}>
+              <Info className="w-4 h-4" />
+              FAQ
+            </button>
+          </div>
+
+          {/* Optional tiny “what is this” link (kept OFF by default) */}
+          {/* If you ever want it: add a 1-line muted helper with Building2 icon, but you asked for quiet, so omitted. */}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+User Resquest block 1 of 3, 2 is form made in softr ui, and 3 are quicklinks
+
+import { useMemo, type CSSProperties } from "react";
+import { useCurrentUser } from "@/lib/user";
+import { Card, CardContent } from "@/components/ui/card";
+import { ChevronLeft, Home, Calendar, Info, User } from "lucide-react";
+
+export default function Block() {
+  const user = useCurrentUser();
+
+  const routes = {
+    back: "/user-update-requests",
+    home: "/home",
+    today: "/today",
+    faq: "/faq",
+    profile: "/profile",
+  };
+
+  const nav = (href: string) => (window.location.href = href);
+  const toText = (v: any) => (v === undefined || v === null ? "" : String(v));
+
+  // Robust office detection (evergreen)
+  const roleStrings = useMemo(() => {
+    const out: string[] = [];
+    const add = (v: any) => {
+      if (!v) return;
+      if (Array.isArray(v)) v.forEach(add);
+      else if (typeof v === "object") {
+        if (v?.name) out.push(String(v.name));
+        if (v?.title) out.push(String(v.title));
+      } else out.push(String(v));
+    };
+
+    add((user as any)?.UserGroup);
+    add((user as any)?.userGroup);
+    add((user as any)?.Role);
+    add((user as any)?.role);
+    add((user as any)?.Auth_Level);
+    add((user as any)?.auth_level);
+    add((user as any)?.groups);
+
+    try {
+      const w: any = typeof window !== "undefined" ? window : null;
+      const lu = w?.logged_in_user;
+      add(lu?.UserGroup);
+      add(lu?.Role);
+      add(lu?.Auth_Level);
+      add(lu?.groups);
+    } catch {}
+
+    return out.filter(Boolean);
+  }, [user]);
+
+  const isOffice = useMemo(() => {
+    const val = roleStrings.join(" ").toLowerCase();
+    return (
+      val.includes("office") ||
+      val.includes("admin") ||
+      val.includes("manager") ||
+      val.includes("dispatcher") ||
+      val.includes("supervisor") ||
+      val.includes("office+")
+    );
+  }, [roleStrings]);
+
+  const displayName = useMemo(() => {
+    const name = toText((user as any)?.name || (user as any)?.fullName);
+    if (name) return name;
+    const em = toText((user as any)?.email);
+    return em ? em.split("@")[0] : "Field Reporter";
+  }, [user]);
+
+  // Optional context from URL (useful if launched from Profile)
+  const ctx = useMemo(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const field = sp.get("field") || sp.get("update") || sp.get("key") || "";
+      const current = sp.get("current") || sp.get("value") || "";
+      return { field, current };
+    } catch {
+      return { field: "", current: "" };
+    }
+  }, []);
+
+  if (!user) return null;
+
+  // ---- visuals (NO full page bg; Softr/App provides continuity) ----
+  const banner: CSSProperties = {
+    background:
+      "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.00) 60%), #000",
+    borderBottom: "1px solid rgba(255,255,255,0.08)",
+  };
+
+  const accentLine: CSSProperties = {
+    height: 2,
+    background:
+      "linear-gradient(90deg, rgba(0,233,239,0.95), rgba(0,233,239,0.25) 35%, rgba(251,191,36,0.22) 70%, rgba(251,191,36,0.70))",
+    boxShadow: "0 0 0 1px rgba(255,255,255,0.04) inset, 0 6px 20px rgba(0,233,239,0.10)",
+  };
+
+  const cardStyle: CSSProperties = {
+    background:
+      "linear-gradient(180deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.028) 100%)",
+    border: "1px solid rgba(255,255,255,0.10)",
+    boxShadow: "0 18px 52px rgba(0,0,0,0.40)",
+    backdropFilter: "blur(8px)",
+  };
+
+  const thinGray: CSSProperties = { color: "rgba(229,231,235,0.55)", fontWeight: 500 };
+  const thinGrayItalic: CSSProperties = { ...thinGray, fontStyle: "italic" };
+
+  const titleWrap: CSSProperties = {
+    whiteSpace: "normal",
+    overflowWrap: "anywhere",
+    wordBreak: "break-word",
+    lineHeight: 1.15,
+  };
+
+  const wrap: CSSProperties = { paddingTop: 12, paddingBottom: 12 };
+
+  const navBtn: CSSProperties = {
+    height: 40,
+    borderRadius: 12,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    fontWeight: 800,
+    fontSize: 13,
+    color: "rgba(0,233,239,0.96)",
+    border: "1px solid rgba(255,255,255,0.10)",
+    background: "transparent",
+    cursor: "pointer",
+  };
+
+  return (
+    <div className="w-full" style={{ color: "#E5E7EB", background: "transparent" }}>
+      {/* Banner (ONLY in first block on page) */}
+      <header style={banner}>
+        <div className="mx-auto w-full max-w-5xl px-4 sm:px-6">
+          <div className="flex items-center justify-between py-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className="w-11 h-11 rounded-2xl flex items-center justify-center font-extrabold tracking-wide"
+                style={{
+                  background: "linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.05))",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  color: "rgba(0,233,239,0.95)",
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
+                }}
+              >
+                RK
+              </div>
+
+              <div className="min-w-0">
+                <div
+                  className="text-[12px] uppercase tracking-[0.22em] leading-tight"
+                  style={{ color: "rgba(229,231,235,0.86)" }}
+                >
+                  FIELD REPORTING SYSTEM
+                </div>
+                <div
+                  style={{
+                    marginTop: 6,
+                    height: 1,
+                    width: 180,
+                    background: "linear-gradient(90deg, rgba(0,233,239,0.25), rgba(255,255,255,0.00))",
+                    opacity: 0.9,
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {isOffice ? (
+                <span
+                  className="px-3 py-1 rounded-full text-xs font-semibold"
+                  style={{
+                    background: "rgba(251,191,36,0.14)",
+                    border: "1px solid rgba(251,191,36,0.28)",
+                    color: "rgba(251,191,36,0.95)",
+                  }}
+                >
+                  Office+
+                </span>
+              ) : null}
+
+              <button
+                type="button"
+                className="w-11 h-11 rounded-full flex items-center justify-center overflow-hidden"
+                style={{
+                  background: "rgba(255,255,255,0.10)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  boxShadow: "0 12px 34px rgba(0,0,0,0.55)",
+                }}
+                aria-label="Profile"
+                title={displayName}
+                onClick={() => nav(routes.profile)}
+              >
+                {(user as any)?.avatarUrl ? (
+                  <img src={(user as any).avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-5 h-5" />
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div style={accentLine} />
+      </header>
+
+      {/* Title + nav */}
+      <div className="mx-auto w-full max-w-5xl px-4 sm:px-6" style={wrap}>
+        <div className="space-y-3">
+          <div className="min-w-0">
+            <div className="text-2xl font-extrabold" style={titleWrap}>
+              Update my Profile — Request <span style={thinGray}>|</span>{" "}
+              <span style={thinGrayItalic}>Solicitar actualización a mi perfil</span>
+            </div>
+          </div>
+
+          {/* Optional context chips (quiet) */}
+          {ctx.field || ctx.current ? (
+            <Card className="rounded-2xl" style={cardStyle}>
+              <CardContent className="p-4">
+                <div className="flex flex-wrap gap-2">
+                  {ctx.field ? (
+                    <span
+                      className="px-3 py-1 rounded-full text-xs font-semibold"
+                      style={{
+                        background: "rgba(0,233,239,0.10)",
+                        border: "1px solid rgba(0,233,239,0.22)",
+                        color: "rgba(0,233,239,0.95)",
+                      }}
+                    >
+                      field: {ctx.field}
+                    </span>
+                  ) : null}
+                  {ctx.current ? (
+                    <span
+                      className="px-3 py-1 rounded-full text-xs font-semibold"
+                      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)" }}
+                    >
+                      current: {ctx.current}
+                    </span>
+                  ) : null}
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {/* Nav row (4 equal buttons) */}
+          <div className="grid grid-cols-4 gap-2" style={{ marginTop: 2 }}>
+            <button type="button" style={navBtn} onClick={() => nav(routes.back)}>
+              <ChevronLeft className="w-4 h-4" />
+              Back
+            </button>
+
+            <button type="button" style={navBtn} onClick={() => nav(routes.home)}>
+              <Home className="w-4 h-4" />
+              Home
+            </button>
+
+            <button type="button" style={navBtn} onClick={() => nav(routes.today)}>
+              <Calendar className="w-4 h-4" />
+              Today
+            </button>
+
+            <button type="button" style={navBtn} onClick={() => nav(routes.faq)}>
+              <Info className="w-4 h-4" />
+              FAQ
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+the quicklinks are the same for all three
+
+import { useMemo, type CSSProperties } from "react";
+import { useCurrentUser } from "@/lib/user";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Home,
+  Calendar,
+  FileText,
+  Bell,
+  Shield,
+  User as UserIcon,
+  ChevronRight,
+  Building2,
+} from "lucide-react";
+
+export default function Block(props: any) {
+  const user = useCurrentUser();
+
+  const routes = {
+    home: "/home",
+    today: "/today",
+    reports: "/reports",
+    bulletins: "/bulletins",
+    jobsiteEditRequests: "/jobsite-edit-requests",
+    officeReview: "/office-review",
+    profile: "/profile",
+  };
+
+  const nav = (href: string) => (window.location.href = href);
+
+  const me = useMemo(() => {
+    const u = (Array.isArray(props?.users) && props.users[0]) || null;
+    const role = String(
+      u?.Role || u?.User_Group || u?.Group || (user as any)?.role || ""
+    ).toLowerCase();
+
+    const isOffice =
+      role.includes("office") ||
+      role.includes("admin") ||
+      role.includes("manager") ||
+      role.includes("dispatcher") ||
+      role.includes("supervisor") ||
+      u?.Is_Office === true;
+
+    return { isOffice };
+  }, [props, user]);
+
+  const wrap: CSSProperties = { color: "#E5E7EB", background: "transparent" };
+
+  const cardStyle: CSSProperties = {
+    background:
+      "linear-gradient(180deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.028) 100%)",
+    border: "1px solid rgba(255,255,255,0.10)",
+    boxShadow: "0 18px 52px rgba(0,0,0,0.40)",
+    backdropFilter: "blur(8px)",
+  };
+
+  const muted: CSSProperties = { color: "rgba(229,231,235,0.55)" };
+
+  const rowBtn =
+    "w-full justify-between rounded-xl border border-white/10 bg-white/5 hover:bg-white/10";
+
+  const Label = ({ en, es }: { en: string; es: string }) => (
+    <span className="inline-flex items-center gap-2">
+      <span>{en}</span>
+      <span style={muted}>|</span>
+      <span style={muted}>{es}</span>
+    </span>
+  );
+
+  const Row = (p: {
+    icon: any;
+    en: string;
+    es: string;
+    onClick: () => void;
+  }) => (
+    <Button variant="ghost" className={rowBtn} onClick={p.onClick}>
+      <span className="inline-flex items-center gap-2">
+        <p.icon className="h-4 w-4" />
+        <Label en={p.en} es={p.es} />
+      </span>
+      <ChevronRight className="h-4 w-4 opacity-70" />
+    </Button>
+  );
+
+  if (!user) return null;
+
+  return (
+    <div style={wrap}>
+      <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 pb-6">
+        <Card style={cardStyle}>
+          <CardContent className="p-4 sm:p-5 space-y-3">
+            <div className="text-sm font-extrabold">
+              Quick Links <span style={muted}>|</span>{" "}
+              <span style={muted}>accesos</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <Row
+                icon={Building2}
+                en="Jobsite Edit Requests"
+                es="solicitudes"
+                onClick={() => nav(routes.jobsiteEditRequests)}
+              />
+              <Row icon={Home} en="Home" es="inicio" onClick={() => nav(routes.home)} />
+              <Row
+                icon={Calendar}
+                en="Today"
+                es="hoy"
+                onClick={() => nav(routes.today)}
+              />
+              <Row
+                icon={FileText}
+                en="Reports"
+                es="reportes"
+                onClick={() => nav(routes.reports)}
+              />
+              <Row
+                icon={Bell}
+                en="Bulletins"
+                es="avisos"
+                onClick={() => nav(routes.bulletins)}
+              />
+
+              {me.isOffice ? (
+                <Row
+                  icon={Shield}
+                  en="Office Review"
+                  es="revisión"
+                  onClick={() => nav(routes.officeReview)}
+                />
+              ) : null}
+
+              <Row
+                icon={UserIcon}
+                en="Profile"
+                es="perfil"
+                onClick={() => nav(routes.profile)}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
