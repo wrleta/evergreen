@@ -1,2 +1,9 @@
 .DS_Store
 **/.DS_Store
+
+# local data (do not commit)
+data/_local/
+*.xlsx
+
+# do not track portal DB spreadsheets
+data_models/*.xlsx
