@@ -34,23 +34,28 @@ export default function Block() {
       <style>{
         `@keyframes rkPulse {
           0%, 100% { opacity: 0; transform: scale(1); }
-          50% { opacity: 0.60; transform: scale(1.15); }
+          50% { opacity: 0.50; transform: scale(1.12); }
         }
         @keyframes rkIconBlink {
           0%, 100% { filter: drop-shadow(0 0 8px rgba(0,233,239,0.35)); opacity: 0.92; }
           50% { filter: drop-shadow(0 0 16px rgba(0,233,239,0.70)) drop-shadow(0 0 24px rgba(184,115,51,0.40)); opacity: 1; }
         }
-        @keyframes rkAccentSwipe {
-          0% { background-position: -220% 0; opacity: 0; }
-          10% { opacity: 0.55; }
+         rkAccentSwipe {
+          0%   { background-position: -200% 0; opacity: 0.00; }
+          15%  { opacity: 0.45; }
+          70%  { background-position: 120% 0; opacity: 0.35; }
+          100% { background-position: 200% 0; opacity: 0.00; }
+        }
+
+10% { opacity: 0.55; }
           70% { background-position: 120% 0; opacity: 0.40; }
           85% { background-position: 170% 0; opacity: 0.22; }
           100% { background-position: 220% 0; opacity: 0; }
         }
         .rk-accent-swipe {
           background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(184,115,51,0) 35%, rgba(184,115,51,0.28) 45%, rgba(0,233,239,0.34) 52%, rgba(184,115,51,0.22) 60%, rgba(0,0,0,0) 75%, rgba(0,0,0,0) 100%);
-          background-size: 240% 100%;
-          animation: rkAccentSwipe 12s forwards;
+          background-size: 220% 100%;
+          animation: rkAccentSwipe 10s forwards;
           mix-blend-mode: screen;
         }
         .rk-pulse-ring.active { animation: rkPulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }

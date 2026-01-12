@@ -1,5 +1,4 @@
-import React, { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useMemo, useState } from "react";
 
 const RK_FOOT_CSS = `
 .rk-foot{
@@ -204,7 +203,7 @@ const RK_FOOT_CSS = `
 
 .rk-en{ font-weight: 650; color: rgba(255,255,255,.86); }
 .rk-sep{ color: rgba(229,231,235,.36); font-weight: 500; }
-.rk-es{ font-weight: 450; color: rgba(255,255,255,.46); }
+.rk-es{ font-weight: 450; font-style: italic; color: rgba(255,255,255,.46); }
 `;
 
 export default function Block() {
