@@ -7,3 +7,5 @@ data/_local/
 
 # do not track portal DB spreadsheets
 data_models/*.xlsx
+
+!data_models/RK_PORTAL_DB.xlsx
