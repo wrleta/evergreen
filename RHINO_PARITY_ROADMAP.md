@@ -1,0 +1,157 @@
+# Rhino Estimation Engine — Parity Roadmap
+
+## What This Is
+Refactoring the 12 Fox Hollow Rhino build scripts into a reusable estimation engine
+that works on ANY project. The engine takes project JSON config as input and builds
+3D models in Rhino for quantity takeoff.
+
+## How It Gets Done
+- A scheduled agent picks up chunks during low-usage weeks
+- Each chunk: code → test → verify against 12FH baseline → iterate until passing → commit
+- Progress tracked in this file (checkboxes below)
+
+## Verification Baseline (12 Fox Hollow)
+The refactored engine must reproduce these EXACT numbers from v30_wall_schedule.json:
+- 17 exterior walls, 390.8 LF total, 3192.82 SF face area
+- 51 interior walls, 460.89 LF total, 3411.10 SF face area
+- 5 structural walls, 198.61 LF total, 1197.47 SF face area
+- 1 demo wall, 13.21 LF total, 97.49 SF face area
+- 13/13 openings cut successfully
+
+Self-test: run the engine with 12FH JSON inputs → compare wall_schedule output → 
+all counts and measurements must match within 0.01 tolerance.
+
+---
+
+## Work Queue
+
+### Phase 1: Extract Reusable Engine (no behavior change)
+
+- [x] **Chunk 1 — Create rhino_engine/ package with primitives** (2026-04-12)
+  - Extracted: `make_solid()`, `box()`, `rect_box()`, `wall_from_centerline()`,
+    `object_brep()`, `solid_difference()`, `capture()`
+  - File: `rhino_engine/primitives.py`
+  - 5/5 geometry tests passing
+
+- [x] **Chunk 2 — Extract perimeter + wall trimming** (2026-04-12)
+  - Extracted: `compute_perimeter()`, `build_perimeter_walls()`,
+    `build_wall_registry()`, `trim_partitions()`
+  - File: `rhino_engine/walls.py`
+  - trim_partitions now returns (result, trim_log) tuple
+  - Baseline perimeter test validates against 12FH 14-vertex polygon
+
+- [x] **Chunk 3 — Extract layer management + capture system** (2026-04-12)
+  - Extracted: `setup_layers()`, `clear_layers()`, `layer_audit()`,
+    `hide_layers()`, `show_layers()`
+  - File: `rhino_engine/layers.py`
+  - LAYERS dicts are now parameters, not constants (BASEMENT_LAYERS, FIRST_FLOOR_LAYERS as defaults)
+  - Also created `rhino_engine/zones.py` with `make_zone_lookup()` (chunk 6 head start)
+
+- [ ] **Chunk 4 — Refactor v30.py main() to use rhino_engine imports**
+  - Replace all inline functions with imports from rhino_engine/
+  - Keep all 12FH-specific data (JSON paths, floor_z, etc.) in v30.py
+  - v30.py becomes: load JSON → call engine functions → capture
+  - VERIFY: full baseline match (wall schedule, layer audit, all counts)
+
+### Phase 2: Parameterize Project Config
+
+- [ ] **Chunk 5 — Define project_config.json schema**
+  - Document the JSON structure needed to build ANY project:
+    - project.name, project.slug
+    - floors[]: { name, floor_z, wall_top_z, zones[] }
+    - zones[]: { name, boundary, floor_z } (replaces hardcoded floor_z())
+    - perimeter: { outer_polygon, segment_thickness }
+    - interior_partitions[]
+    - openings[]
+    - structure: { beams, posts, footings, stairs, areaways }
+    - layers: { name → rgb } (overridable defaults)
+  - Write schema as JSON Schema + example using 12FH data
+  - VERIFY: schema validates against existing 12FH JSONs
+
+- [ ] **Chunk 6 — Build generic floor_z() from zone config**
+  - Replace hardcoded `if x < -19.65` with point-in-polygon zone lookup
+  - Zone boundaries come from project_config.json zones[]
+  - VERIFY: same floor elevations for all 12FH wall positions
+
+- [ ] **Chunk 7 — Create project_builder.py (the generic entry point)**
+  - Takes: --project <slug> (reads estimates/<slug>/project_config.json)
+  - Calls rhino_engine functions with config-driven parameters
+  - Outputs: wall_schedule.json, captures, layer audit
+  - VERIFY: 12FH baseline match when run as `project_builder.py --project 12_fox_hollow`
+
+### Phase 3: Bridge from AutoCAD Traces
+
+- [ ] **Chunk 8 — DXF-to-config converter**
+  - Read 1_Greatmeadow_MEASURE.dxf (or .dwg export)
+  - Extract: hatch areas (with scale→pitch encoding), polylines by layer
+  - Map AutoCAD layers → project_config.json structure
+  - Output: estimates/8_greatmeadow/project_config.json
+  - VERIFY: quantities match acad_takeoff_full.py output for 1GM
+
+- [ ] **Chunk 9 — Test build on 1 Greatmeadow**
+  - Run project_builder.py --project 8_greatmeadow
+  - Compare 3D model quantities against manual AutoCAD measurements
+  - Iterate until wall counts, areas, lengths match within 5%
+  - VERIFY: visual comparison (captures) + quantity cross-check
+
+- [ ] **Chunk 10 — Viewer integration**
+  - Ensure takeoff.json gets generated for new projects
+  - Verify viewer loads and displays correctly
+  - Test project switcher in the UI
+  - VERIFY: both projects visible and navigable in viewer
+
+---
+
+## Usage Gate
+
+Before starting any chunk, the agent checks:
+```bash
+git log --since="7 days ago" --oneline -- . | wc -l
+```
+If > 30 commits in the last week = HIGH USAGE → skip, reschedule.
+If <= 30 = LOW USAGE → proceed with next chunk.
+
+## Rhino Watcher Integration
+
+Chunks needing Rhino verification use the **file-trigger watcher pattern**:
+1. Write an IronPython script to `estimates/12_fox_hollow/<name>.py`
+2. Write the script path to `estimates/12_fox_hollow/<name>.trigger`
+3. Rhino watcher (idle event) picks it up, runs it, writes `<name>.py.result`
+4. Read the `.result` file for OK/ERROR status
+
+Watcher source: `estimates/12_fox_hollow/rhino_watcher.py`
+Watch dir: `C:\Users\Walter\iCloudDrive\Documents\Work\windowsmac\estimates\12_fox_hollow`
+
+For LOCAL sessions (not remote agent): check `tasklist | grep -i rhino` first.
+If Rhino not running, launch it and inject watcher via SendKeys:
+  `rhino-send-script.ps1` in `qbo-api/scripts/`
+
+Remote agent (GitHub): does pure Python/JSON work only.
+Local agent (Walter's machine): does Rhino-dependent verification via watcher triggers.
+
+## Self-Grind Protocol
+
+For each chunk:
+1. Read this roadmap, find next unchecked chunk
+2. Read the relevant source files
+3. Make the changes
+4. Run verification:
+   - Pure Python chunks: `python tests/test_geometry.py`
+   - Rhino chunks: write trigger → wait for .result → read output
+5. If FAIL: read the error, diagnose, fix, re-run (up to 5 attempts)
+6. If PASS: commit, mark chunk done
+7. If stuck after 5 attempts: leave detailed notes in PARITY_NOTES.md, move on
+8. Update this roadmap (check the box)
+
+## File Locations
+- Engine repo: https://github.com/wrleta/rhino-engine (private)
+- Engine local: C:\Users\Walter\rhino-engine-repo\rhino_engine\
+- 12FH project: C:\Users\Walter\iCloudDrive\Documents\Work\windowsmac\estimates\12_fox_hollow\
+- 12FH baseline: v30_wall_schedule.json (17 ext, 51 int, 5 struct, 13/13 openings)
+- 12FH source: v30.py (1,444 lines)
+- 12FH inputs: v30_perimeter.json, basement_complete.json, rhino_views/cad_openings_resolved.json
+- 1GM AutoCAD: estimates/8_greatmeadow/1_Greatmeadow_MEASURE.dxf
+- 1GM measurements: estimates/8_greatmeadow/acad_takeoff_full.py (reference quantities)
+- Rhino watcher: estimates/12_fox_hollow/rhino_watcher.py
+- Rhino SendKeys: qbo-api/scripts/rhino-send-script.ps1
+- Viewer: takeoff/server.mjs, takeoff/ui/app.js

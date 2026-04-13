@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.3dm
+*.3dmbak
+*.pdf
+*.png
+*.env
+.DS_Store
+*.bak

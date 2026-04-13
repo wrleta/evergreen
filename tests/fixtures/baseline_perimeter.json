@@ -1,0 +1,908 @@
+{
+  "notes": "Clean perimeter definition for v30 rebuild. Outer face coordinates. CCW from SW corner.",
+  "outer_polygon": {
+    "note": "2026-04-03 CORRECTED: South wall positions from PDF pixel scan (216px/ft) + line extraction. Main south outer=1.10 (was 1.81=inner face, 8in wall). East wing south outer=5.60 (pixel scan x=20,25). Storage south outer=6.45 (pixel scan x=35,45,55, 10in wall). Step x2=31.00 (PDF line extraction). North/west from CAD.",
+    "vertices": [
+      [
+        -25.48,
+        1.10
+      ],
+      [
+        9.82,
+        1.10
+      ],
+      [
+        9.82,
+        5.60
+      ],
+      [
+        31.00,
+        5.60
+      ],
+      [
+        31.00,
+        6.45
+      ],
+      [
+        58.42,
+        6.45
+      ],
+      [
+        58.42,
+        44.29
+      ],
+      [
+        30.11,
+        44.29
+      ],
+      [
+        30.11,
+        40.79
+      ],
+      [
+        -15.27,
+        40.79
+      ],
+      [
+        -15.27,
+        43.832
+      ],
+      [
+        -41.98,
+        43.832
+      ],
+      [
+        -41.98,
+        21.43
+      ],
+      [
+        -25.48,
+        21.43
+      ]
+    ],
+    "segment_thickness": [
+      0.67,
+      0.83,
+      0.67,
+      0.83,
+      0.83,
+      0.83,
+      0.83,
+      0.83,
+      0.83,
+      0.83,
+      0.83,
+      0.83,
+      0.83,
+      0.83
+    ],
+    "segment_labels": [
+      "0-1 south main (8in new poured, pixel-confirmed y=1.10 outer)",
+      "1-2 step at x=9.82/10.65 (10in, line-extract confirmed)",
+      "2-3 east wing south (8in, pixel-confirmed y=5.60 outer)",
+      "3-4 step at x=31.00 (10in, line-extract confirmed)",
+      "4-5 storage south (10in, pixel-confirmed y=6.45 outer)",
+      "5-6 east wall (10in, pixel-confirmed x=58.42 outer)",
+      "6-7 north east (10in)",
+      "7-8 step at x=29.61 (10in, 3'-6\" deep)",
+      "8-9 north center (10in)",
+      "9-10 step at x=-15.19 (10in, 3'-0\" deep)",
+      "10-11 north west (10in)",
+      "11-12 upper west (10in)",
+      "12-13 upper south at y=21 (10in)",
+      "13-0 west crawl (10in)"
+    ]
+  },
+  "lower_level": {
+    "floor_z": -8.17,
+    "crawl_floor_z": -3.0,
+    "wall_top_z": 0.0,
+    "joist_underside_z": -0.79,
+    "exterior_thickness": 0.83,
+    "south_perimeter": [
+      {
+        "x0": -25.37,
+        "x1": 10.65,
+        "y": 2.3,
+        "t": 0.83,
+        "cat": "new",
+        "note": "10in poured conc foundation to match existing"
+      },
+      {
+        "x0": 10.65,
+        "x1": 31.0,
+        "y": 3.3,
+        "t": 0.83,
+        "cat": "exist",
+        "note": "east wing south 10in"
+      },
+      {
+        "x0": 31.0,
+        "x1": 58.42,
+        "y": 6.5,
+        "t": 0.83,
+        "cat": "exist",
+        "note": "storage south"
+      }
+    ],
+    "south_steps": [
+      {
+        "x": 10.65,
+        "y0": 2.3,
+        "y1": 3.3,
+        "t": 0.83,
+        "note": "main-to-east step"
+      },
+      {
+        "x": 31.0,
+        "y0": 3.3,
+        "y1": 6.5,
+        "t": 0.83,
+        "note": "east-to-storage step"
+      }
+    ],
+    "west_perimeter": [
+      {
+        "y0": 2.3,
+        "y1": 21.0,
+        "x": -25.37,
+        "t": 0.83,
+        "cat": "new",
+        "note": "crawl west"
+      }
+    ],
+    "east_perimeter": [
+      {
+        "y0": 6.5,
+        "y1": 21.0,
+        "x": 58.42,
+        "t": 0.83,
+        "cat": "exist",
+        "note": "storage east"
+      }
+    ],
+    "north_perimeter": [
+      {
+        "x0": -25.2,
+        "x1": 58.0,
+        "y": 21.0,
+        "t": 0.67,
+        "note": "beam line = lower level north"
+      }
+    ]
+  },
+  "upper_level": {
+    "floor_z": -8.17,
+    "wall_top_z": 0.0,
+    "exterior_thickness": 0.83,
+    "south_perimeter": [
+      {
+        "x0": -42.04,
+        "x1": -25.37,
+        "y": 21.0,
+        "t": 0.83,
+        "note": "upper west extension only (lower level covers -25.37 to 58.42)"
+      }
+    ],
+    "west_perimeter": [
+      {
+        "y0": 21.0,
+        "y1": 44.89,
+        "x": -42.04,
+        "t": 0.83,
+        "cat": "exist",
+        "note": "entry foyer + upper west"
+      }
+    ],
+    "east_perimeter": [
+      {
+        "y0": 6.5,
+        "y1": 45.35,
+        "x": 58.42,
+        "t": 0.83,
+        "cat": "exist",
+        "note": "storage/laundry east"
+      }
+    ],
+    "north_perimeter": [
+      {
+        "x0": -42.04,
+        "x1": -15.19,
+        "y": 44.89,
+        "t": 0.83,
+        "cat": "exist",
+        "note": "upper north west"
+      },
+      {
+        "x0": -15.19,
+        "x1": 3.0,
+        "y": 41.85,
+        "t": 0.83,
+        "cat": "exist",
+        "note": "north step-back center-west"
+      },
+      {
+        "x0": 3.0,
+        "x1": 29.61,
+        "y": 41.85,
+        "t": 0.83,
+        "cat": "exist",
+        "note": "north step-back center-east"
+      },
+      {
+        "x0": 29.61,
+        "x1": 58.42,
+        "y": 45.35,
+        "t": 0.83,
+        "cat": "new",
+        "note": "upper north east"
+      }
+    ],
+    "north_steps": [
+      {
+        "x": -15.19,
+        "y0": 41.85,
+        "y1": 44.89,
+        "t": 0.83,
+        "note": "north step west (3'-0-1/2\")"
+      },
+      {
+        "x": 29.61,
+        "y0": 41.85,
+        "y1": 45.35,
+        "t": 0.83,
+        "note": "north step east (3'-6\")"
+      }
+    ]
+  },
+  "interior_partitions": [
+    {
+      "id": "crawl_east_fdn",
+      "x": -19.65,
+      "y0": 2.3,
+      "y1": 21.0,
+      "t": 0.84,
+      "dir": "V",
+      "cat": "exist",
+      "note": "10in fdn wall \u00e2\u20ac\u201d dimension chain: 7-11 office + 18-5 rec = 26-4, closes at x=-16.6"
+    },
+    {
+      "id": "office_e",
+      "x": -8.0,
+      "y0": 2.3,
+      "y1": 21.0,
+      "t": 0.5,
+      "dir": "V",
+      "cat": "exist",
+      "note": "full height from south perimeter to beam"
+    },
+    {
+      "id": "crawl_h",
+      "y": 13.02,
+      "x0": -23.81,
+      "x1": -19.65,
+      "t": 0.83,
+      "dir": "H",
+      "cat": "new",
+      "note": "crawl H divider, extends to perimeter and crawl_east_fdn"
+    },
+    {
+      "id": "main_east",
+      "x": 10.65,
+      "y0": 2.3,
+      "y1": 21.0,
+      "t": 0.5,
+      "dir": "V",
+      "cat": "exist",
+      "note": "at perimeter step x=10.65, full height to beam"
+    },
+    {
+      "id": "mech_n",
+      "y": 15.0,
+      "x0": 11.0,
+      "x1": 30.55,
+      "t": 0.5,
+      "dir": "H",
+      "cat": "exist",
+      "note": "mech room north, trimmer adjusts to wall faces"
+    },
+    {
+      "id": "boiler_e",
+      "x": 17.0,
+      "y0": 3.3,
+      "y1": 15.25,
+      "t": 0.5,
+      "dir": "V",
+      "cat": "exist",
+      "note": "per CAD y1=15.25"
+    },
+    {
+      "id": "bath_s_w",
+      "y": 35.0,
+      "x0": -16.0,
+      "x1": 14.58,
+      "t": 0.375,
+      "dir": "H",
+      "cat": "exist",
+      "note": "2x4 framed partition, gap at x=14.58-18.25 is doorway"
+    },
+    {
+      "id": "bath_s_e",
+      "y": 35.0,
+      "x0": 18.25,
+      "x1": 29.33,
+      "t": 0.375,
+      "dir": "H",
+      "cat": "exist",
+      "note": "2x4 framed partition"
+    },
+    {
+      "id": "bath_s_ne",
+      "y": 34.67,
+      "x0": 29.33,
+      "x1": 39.7,
+      "t": 0.375,
+      "dir": "H",
+      "cat": "exist",
+      "note": "2x4 framed partition, ends at bath_partition x=39.7"
+    },
+    {
+      "id": "wic_bath",
+      "x": 21.0,
+      "y0": 21.0,
+      "y1": 41.0,
+      "t": 0.5,
+      "dir": "V",
+      "cat": "exist",
+      "note": "WIC/bath boundary, beam to perimeter"
+    },
+    {
+      "id": "bath_laundry",
+      "x": 29.0,
+      "y0": 26.3,
+      "y1": 41.0,
+      "t": 0.542,
+      "dir": "V",
+      "cat": "exist",
+      "note": "2x6 plumbing wall, bath/laundry boundary"
+    },
+    {
+      "id": "foyer_n",
+      "y": 27.5,
+      "x0": -42.04,
+      "x1": -15.19,
+      "t": 0.375,
+      "dir": "H",
+      "cat": "exist",
+      "note": "2x4 framed partition, foyer north"
+    },
+    {
+      "id": "corridor_s",
+      "y": 27.18,
+      "x0": -15.19,
+      "x1": -11.93,
+      "t": 0.375,
+      "dir": "H",
+      "cat": "exist",
+      "note": "2x4 framed partition, stair south"
+    },
+    {
+      "id": "stair_w",
+      "x": -16.0,
+      "y0": 27.0,
+      "y1": 35.0,
+      "t": 0.5,
+      "dir": "V",
+      "cat": "exist",
+      "note": "staircase west, ends at bath_s \u00e2\u20ac\u201d perimeter step handles y>35 per CAD wall_138"
+    },
+    {
+      "id": "stair_e",
+      "x": -12.0,
+      "y0": 27.0,
+      "y1": 35.0,
+      "t": 0.5,
+      "dir": "V",
+      "cat": "exist"
+    },
+    {
+      "id": "wic_w",
+      "x": -8.0,
+      "y0": 21.0,
+      "y1": 35.0,
+      "t": 0.5,
+      "dir": "V",
+      "cat": "new",
+      "note": "WIC west, full extent from beam to bath_s"
+    },
+    {
+      "id": "bedroom_n_w",
+      "y": 30.75,
+      "x0": -8.0,
+      "x1": -2.5,
+      "t": 0.5,
+      "dir": "H",
+      "cat": "new",
+      "note": "bedroom north west, starts at wic_w/office_e"
+    },
+    {
+      "id": "bedroom_n_struct_w",
+      "y": 30.7,
+      "x0": -2.62,
+      "x1": 1.43,
+      "t": 0.33,
+      "dir": "H",
+      "cat": "struct",
+      "note": "per CAD wall_071"
+    },
+    {
+      "id": "bedroom_n_slider",
+      "y": 30.7,
+      "x0": 1.43,
+      "x1": 7.43,
+      "t": 0.33,
+      "dir": "H",
+      "cat": "new",
+      "note": "slider host wall per CAD gap between wall_071 and wall_072"
+    },
+    {
+      "id": "bedroom_n_struct_e",
+      "y": 30.7,
+      "x0": 7.43,
+      "x1": 11.47,
+      "t": 0.33,
+      "dir": "H",
+      "cat": "struct",
+      "note": "structural header east of sliders per CAD wall_072"
+    },
+    {
+      "id": "bedroom_n_e",
+      "y": 30.75,
+      "x0": 11.47,
+      "x1": 18.87,
+      "t": 0.5,
+      "dir": "H",
+      "cat": "exist",
+      "note": "stops at bath_tub_n to avoid overlap"
+    },
+    {
+      "id": "mech_divider",
+      "x": 35.0,
+      "y0": 6.5,
+      "y1": 15.0,
+      "t": 0.5,
+      "dir": "V",
+      "cat": "exist",
+      "note": "mech/storage boundary per plan - moved from x=37 to align with dor_02 opening at x=34.77"
+    },
+    {
+      "id": "storage_divider",
+      "x": 49.24,
+      "y0": 6.5,
+      "y1": 13.45,
+      "t": 0.33,
+      "dir": "V",
+      "cat": "new",
+      "note": "per CAD wall_213, ends at y=13.45"
+    },
+    {
+      "id": "den_e",
+      "x": 30.55,
+      "y0": 3.3,
+      "y1": 21.0,
+      "t": 0.542,
+      "dir": "V",
+      "cat": "exist",
+      "note": "2x6 framed partition, den east boundary"
+    },
+    {
+      "id": "laundry_n",
+      "y": 43.5,
+      "x0": 39.7,
+      "x1": 48.1,
+      "t": 0.33,
+      "dir": "H",
+      "cat": "exist",
+      "note": "bath_partition to exist_wall_post"
+    },
+    {
+      "id": "bath_partition",
+      "x": 39.7,
+      "y0": 35.92,
+      "y1": 39.47,
+      "t": 0.38,
+      "dir": "V",
+      "cat": "exist",
+      "note": "south of doorway per CAD wall_195, y0=35.92 confirmed"
+    },
+    {
+      "id": "bath_partition_n",
+      "x": 39.7,
+      "y0": 41.65,
+      "y1": 43.33,
+      "t": 0.38,
+      "dir": "V",
+      "cat": "exist",
+      "note": "per CAD wall_196 y1=43.33"
+    },
+    {
+      "id": "bedroom_n",
+      "y": 35.6,
+      "x0": 39.7,
+      "x1": 48.1,
+      "t": 0.38,
+      "dir": "H",
+      "cat": "exist",
+      "note": "bath_partition to exist_wall_post"
+    },
+    {
+      "id": "exist_wall_post",
+      "x": 48.1,
+      "y0": 35.6,
+      "y1": 44.5,
+      "t": 0.33,
+      "dir": "V",
+      "cat": "struct",
+      "note": "EXIST. WALL AND POST, to north perimeter"
+    },
+    {
+      "id": "closet_bedroom_v",
+      "x": 48.1,
+      "y0": 23.5,
+      "y1": 35.6,
+      "t": 0.33,
+      "dir": "V",
+      "cat": "exist",
+      "note": "EXIST. WALL AND POST continuation, starts at closet_n"
+    },
+    {
+      "id": "closet_n",
+      "y": 23.5,
+      "x0": 48.1,
+      "x1": 58.0,
+      "t": 0.5,
+      "dir": "H",
+      "cat": "exist",
+      "note": "north wall of two CL. closets, host wall for dor_05"
+    },
+    {
+      "id": "closet_div",
+      "x": 53.5,
+      "y0": 21.0,
+      "y1": 23.5,
+      "t": 0.33,
+      "dir": "V",
+      "cat": "exist",
+      "note": "divider between two CL. closets per plan"
+    },
+    {
+      "id": "bath_bound_w",
+      "x": 2.53,
+      "y0": 36.75,
+      "y1": 41.2,
+      "t": 0.375,
+      "dir": "V",
+      "cat": "exist",
+      "note": "2x4 framed partition, bath west boundary"
+    },
+    {
+      "id": "bath_bound_e",
+      "x": 15.0,
+      "y0": 36.75,
+      "y1": 41.2,
+      "t": 0.375,
+      "dir": "V",
+      "cat": "exist",
+      "note": "2x4 framed partition, bath east boundary"
+    },
+    {
+      "id": "corridor_upper",
+      "y": 27.66,
+      "x0": 11.85,
+      "x1": 27.41,
+      "t": 0.37,
+      "dir": "H",
+      "cat": "exist",
+      "note": "corridor/hall partition per CAD wall_065"
+    },
+    {
+      "id": "bath_inner",
+      "x": 18.55,
+      "y0": 28.0,
+      "y1": 33.3,
+      "t": 0.542,
+      "dir": "V",
+      "cat": "exist",
+      "note": "2x6 plumbing wall, bath interior partition"
+    },
+    {
+      "id": "bath_fixture_wall",
+      "y": 32.4,
+      "x0": 21.0,
+      "x1": 29.0,
+      "t": 0.542,
+      "dir": "H",
+      "cat": "exist",
+      "note": "2x6 plumbing wall, bath vanity/fixture"
+    },
+    {
+      "id": "wic_partition",
+      "x": 11.66,
+      "y0": 30.17,
+      "y1": 34.0,
+      "t": 0.38,
+      "dir": "V",
+      "cat": "new",
+      "note": "WIC room divider per CAD wall_162"
+    },
+    {
+      "id": "sauna_s",
+      "y": 7.5,
+      "x0": 49.24,
+      "x1": 57.2,
+      "t": 0.33,
+      "dir": "H",
+      "cat": "new",
+      "note": "proposed sauna room south wall per CAD wall_026"
+    },
+    {
+      "id": "demo_partition_ns",
+      "x": -13.78,
+      "y0": 7.12,
+      "y1": 21.0,
+      "t": 0.38,
+      "dir": "V",
+      "cat": "demo",
+      "note": "existing 2x4 framed partition to remove \u00e2\u20ac\u201d dashed lines in CAD demo_walls, between crawl_east_fdn and office_e"
+    },
+    {
+      "id": "bath_tub_n",
+      "y": 30.65,
+      "x0": 18.87,
+      "x1": 20.87,
+      "t": 0.38,
+      "dir": "H",
+      "cat": "exist",
+      "note": "bath tub/shower north partition per CAD wall_070"
+    },
+    {
+      "id": "bath_tub_s",
+      "y": 33.05,
+      "x0": 18.87,
+      "x1": 20.87,
+      "t": 0.44,
+      "dir": "H",
+      "cat": "exist",
+      "note": "bath tub/shower south partition per CAD wall_073"
+    },
+    {
+      "id": "ne_upper_h",
+      "y": 42.02,
+      "x0": 54.95,
+      "x1": 57.59,
+      "t": 0.34,
+      "dir": "H",
+      "cat": "exist",
+      "note": "NE upper area wall per CAD wall_102"
+    },
+    {
+      "id": "upper_east_h",
+      "y": 22.79,
+      "x0": 31.0,
+      "x1": 47.91,
+      "t": 0.33,
+      "dir": "H",
+      "cat": "exist",
+      "note": "upper level east horizontal per CAD wall_059"
+    },
+    {
+      "id": "vent_shaft_e",
+      "x": 36.82,
+      "y0": 7.83,
+      "y1": 15.4,
+      "t": 0.4,
+      "dir": "V",
+      "cat": "exist",
+      "note": "east wall of vent shaft per CAD wall_192"
+    },
+    {
+      "id": "vent_shaft_n",
+      "y": 15.59,
+      "x0": 34.89,
+      "x1": 36.64,
+      "t": 0.4,
+      "dir": "H",
+      "cat": "new",
+      "note": "north wall of vent shaft per CAD wall_030"
+    },
+    {
+      "id": "storage_h_w",
+      "y": 13.62,
+      "x0": 49.41,
+      "x1": 52.23,
+      "t": 0.34,
+      "dir": "H",
+      "cat": "exist",
+      "note": "storage internal per CAD wall_027"
+    },
+    {
+      "id": "storage_h_e",
+      "y": 13.62,
+      "x0": 55.23,
+      "x1": 58.42,
+      "t": 0.34,
+      "dir": "H",
+      "cat": "new",
+      "note": "per CAD wall_028 x1=58.42"
+    },
+    {
+      "id": "stair_return",
+      "x": -15.38,
+      "y0": 21.5,
+      "y1": 26.89,
+      "t": 0.34,
+      "dir": "V",
+      "cat": "exist",
+      "note": "stair south return, starts at beam_offset"
+    },
+    {
+      "id": "beam_offset",
+      "y": 21.5,
+      "x0": -25.2,
+      "x1": 58.0,
+      "t": 0.33,
+      "dir": "H",
+      "cat": "struct",
+      "note": "LOCATE WALL 6 IN FROM FINISH BEAM SOFFIT \u00e2\u20ac\u201d per plan note, single wall 6in north of beam"
+    },
+    {
+      "id": "upper_west_s",
+      "y": 22.37,
+      "x0": -40.8,
+      "x1": -25.2,
+      "t": 0.84,
+      "dir": "H",
+      "cat": "exist",
+      "note": "foyer south wall, separates upper west from beam zone"
+    },
+    {
+      "id": "sauna_e",
+      "x": 57.38,
+      "y0": 7.83,
+      "y1": 13.45,
+      "t": 0.34,
+      "dir": "V",
+      "cat": "new",
+      "note": "sauna east partition per CAD wall_215"
+    },
+    {
+      "id": "bath_s_bridge",
+      "y": 34.67,
+      "x0": 14.6,
+      "x1": 18.2,
+      "t": 0.375,
+      "dir": "H",
+      "cat": "exist",
+      "note": "2x4 framed, bath south doorway bridge/header"
+    },
+    {
+      "id": "stair_w_upper",
+      "x": -16.0,
+      "y0": 35.0,
+      "y1": 44.5,
+      "t": 0.5,
+      "dir": "V",
+      "cat": "exist",
+      "note": "stair west extension above bath_s, continues to north perimeter"
+    }
+  ],
+  "diagonals": [
+    {
+      "id": "wic_diag",
+      "p1": [
+        -6.9,
+        34.0
+      ],
+      "p2": [
+        -2.6,
+        30.6
+      ],
+      "t": 0.5,
+      "cat": "new"
+    },
+    {
+      "id": "wic_return",
+      "p1": [
+        -9.4,
+        35.9
+      ],
+      "p2": [
+        -7.2,
+        34.0
+      ],
+      "t": 0.5,
+      "cat": "exist",
+      "note": "per CAD wall_wic_return p1 at y=35.9"
+    }
+  ],
+  "openings": "use rhino_views/cad_openings_resolved.json",
+  "areaways": [],
+  "slab_polygons": {
+    "basement": [
+      [
+        -16.6,
+        2.3
+      ],
+      [
+        11.0,
+        2.3
+      ],
+      [
+        11.0,
+        3.3
+      ],
+      [
+        31.0,
+        3.3
+      ],
+      [
+        31.0,
+        6.5
+      ],
+      [
+        58.0,
+        6.5
+      ],
+      [
+        58.0,
+        44.5
+      ],
+      [
+        30.5,
+        44.5
+      ],
+      [
+        30.5,
+        41.2
+      ],
+      [
+        -16.0,
+        41.2
+      ],
+      [
+        -16.0,
+        44.5
+      ],
+      [
+        -40.8,
+        44.5
+      ],
+      [
+        -40.8,
+        21.0
+      ],
+      [
+        -16.6,
+        21.0
+      ]
+    ],
+    "crawl": [
+      [
+        -25.2,
+        2.3
+      ],
+      [
+        -16.6,
+        2.3
+      ],
+      [
+        -16.6,
+        21.0
+      ],
+      [
+        -25.2,
+        21.0
+      ]
+    ]
+  }
+}
