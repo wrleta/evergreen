@@ -271,3 +271,60 @@ def trim_partitions(partitions, h_walls, v_walls):
         result.append(tp)
 
     return result, trim_log
+
+
+# ── Wall schedule ────────────────────────────────────────────────────────────
+
+def wall_schedule(wall_data_list):
+    """Compute a wall schedule from a flat list of wall data dicts.
+
+    Each dict must have: dir ("H" or "V"), t, z0, z1.
+    H walls need x0, x1; V walls need y0, y1.
+    Optional fields: id, type, note, cat, room.
+
+    Returns {"walls": [...], "summary_by_type": {...}}.
+    Each wall entry has: id, type, dir, t, length, height,
+    face_area_sf, volume_cf, room, note, cat.
+    Summary entries have: count, total_length, total_face_area_sf, total_volume_cf.
+    """
+    walls = []
+    for w in wall_data_list:
+        if w["dir"] == "H":
+            length = abs(w["x1"] - w["x0"])
+        else:
+            length = abs(w["y1"] - w["y0"])
+        height = abs(w["z1"] - w["z0"])
+        face_area = round(length * height, 4)
+        volume = round(face_area * w["t"], 4)
+        entry = {
+            "id": w.get("id", "?"),
+            "type": w.get("type", "exterior"),
+            "dir": w["dir"],
+            "t": w["t"],
+            "length": round(length, 4),
+            "height": round(height, 4),
+            "face_area_sf": face_area,
+            "volume_cf": volume,
+            "room": w.get("room", ""),
+            "note": w.get("note", ""),
+            "cat": w.get("cat", ""),
+        }
+        walls.append(entry)
+
+    summary = {}
+    for w in walls:
+        wtype = w["type"]
+        if wtype not in summary:
+            summary[wtype] = {
+                "count": 0,
+                "total_length": 0.0,
+                "total_face_area_sf": 0.0,
+                "total_volume_cf": 0.0,
+            }
+        summary[wtype]["count"] += 1
+        s = summary[wtype]
+        s["total_length"] = round(s["total_length"] + w["length"], 4)
+        s["total_face_area_sf"] = round(s["total_face_area_sf"] + w["face_area_sf"], 4)
+        s["total_volume_cf"] = round(s["total_volume_cf"] + w["volume_cf"], 4)
+
+    return {"walls": walls, "summary_by_type": summary}

@@ -39,7 +39,7 @@ sys.modules['scriptcontext'] = type(sys)('scriptcontext')
 
 # Now we can import the engine modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from rhino_engine.walls import compute_perimeter, build_wall_registry, trim_partitions
+from rhino_engine.walls import compute_perimeter, build_wall_registry, trim_partitions, wall_schedule
 from rhino_engine.zones import make_zone_lookup
 
 
@@ -162,10 +162,88 @@ def test_zone_lookup():
     print("PASS: zone lookup")
 
 
+def test_wall_schedule_aggregation():
+    """wall_schedule() should compute lengths, areas, volumes and aggregate by type."""
+    HEIGHT = 8.17   # -8.17 to 0.0
+    walls = [
+        {"id": "ext1", "type": "exterior", "dir": "H", "t": 0.83,
+         "z0": -8.17, "z1": 0.0, "x0": 0.0, "x1": 10.0},
+        {"id": "ext2", "type": "exterior", "dir": "V", "t": 0.83,
+         "z0": -8.17, "z1": 0.0, "y0": 0.0, "y1": 20.0},
+        {"id": "int1", "type": "interior", "dir": "H", "t": 0.5,
+         "z0": -8.17, "z1": 0.0, "x0": 2.0, "x1": 17.0},
+        {"id": "struct1", "type": "struct", "dir": "H", "t": 0.67,
+         "z0": -8.17, "z1": 0.0, "x0": -30.0, "x1": 70.0},
+    ]
+    sched = wall_schedule(walls)
+
+    assert len(sched["walls"]) == 4
+
+    ext = sched["summary_by_type"]["exterior"]
+    assert ext["count"] == 2, "exterior count should be 2, got %d" % ext["count"]
+    assert abs(ext["total_length"] - 30.0) < 0.01, "total_length: expected 30, got %.4f" % ext["total_length"]
+    # ext1: 10*8.17=81.7, ext2: 20*8.17=163.4, total=245.1
+    assert abs(ext["total_face_area_sf"] - (10.0 * HEIGHT + 20.0 * HEIGHT)) < 0.1, \
+        "exterior face area mismatch: %.4f" % ext["total_face_area_sf"]
+
+    int_s = sched["summary_by_type"]["interior"]
+    assert int_s["count"] == 1, "interior count should be 1"
+    assert abs(int_s["total_length"] - 15.0) < 0.01, "interior length: expected 15, got %.4f" % int_s["total_length"]
+
+    struct_s = sched["summary_by_type"]["struct"]
+    assert struct_s["count"] == 1
+    assert abs(struct_s["total_length"] - 100.0) < 0.01, "struct length: expected 100, got %.4f" % struct_s["total_length"]
+
+    # Verify volume: ext1 = 10 * 8.17 * 0.83 = 67.81
+    w = sched["walls"][0]
+    assert abs(w["volume_cf"] - 10.0 * HEIGHT * 0.83) < 0.05, \
+        "ext1 volume: expected %.2f, got %.4f" % (10.0 * HEIGHT * 0.83, w["volume_cf"])
+
+    print("PASS: wall schedule aggregation")
+
+
+def test_baseline_wall_schedule():
+    """Baseline fixture should match the 12FH verified quantities from the roadmap."""
+    with open(os.path.join(FIXTURES, "baseline_wall_schedule.json")) as f:
+        sched = json.load(f)
+
+    s = sched["summary_by_type"]
+
+    assert s["exterior"]["count"] == 17, \
+        "exterior count: expected 17, got %d" % s["exterior"]["count"]
+    assert abs(s["exterior"]["total_length"] - 390.8) < 0.1, \
+        "exterior length: expected 390.8, got %.2f" % s["exterior"]["total_length"]
+    assert abs(s["exterior"]["total_face_area_sf"] - 3192.82) < 0.5, \
+        "exterior area: expected 3192.82, got %.2f" % s["exterior"]["total_face_area_sf"]
+
+    assert s["interior"]["count"] == 51, \
+        "interior count: expected 51, got %d" % s["interior"]["count"]
+    assert abs(s["interior"]["total_length"] - 460.89) < 0.1, \
+        "interior length: expected 460.89, got %.2f" % s["interior"]["total_length"]
+    assert abs(s["interior"]["total_face_area_sf"] - 3411.10) < 0.5, \
+        "interior area: expected 3411.10, got %.2f" % s["interior"]["total_face_area_sf"]
+
+    assert s["struct"]["count"] == 5, \
+        "struct count: expected 5, got %d" % s["struct"]["count"]
+    assert abs(s["struct"]["total_length"] - 198.61) < 0.1, \
+        "struct length: expected 198.61, got %.2f" % s["struct"]["total_length"]
+    assert abs(s["struct"]["total_face_area_sf"] - 1197.47) < 0.5, \
+        "struct area: expected 1197.47, got %.2f" % s["struct"]["total_face_area_sf"]
+
+    assert s["demo"]["count"] == 1, \
+        "demo count: expected 1, got %d" % s["demo"]["count"]
+    assert abs(s["demo"]["total_length"] - 13.21) < 0.1, \
+        "demo length: expected 13.21, got %.2f" % s["demo"]["total_length"]
+
+    print("PASS: baseline wall schedule matches 12FH verified numbers")
+
+
 if __name__ == "__main__":
     test_compute_perimeter_simple_rectangle()
     test_compute_perimeter_baseline()
     test_wall_registry()
     test_trim_partitions()
     test_zone_lookup()
+    test_wall_schedule_aggregation()
+    test_baseline_wall_schedule()
     print("\nAll tests passed.")

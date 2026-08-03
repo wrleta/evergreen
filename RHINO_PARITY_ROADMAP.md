@@ -47,11 +47,15 @@ all counts and measurements must match within 0.01 tolerance.
   - LAYERS dicts are now parameters, not constants (BASEMENT_LAYERS, FIRST_FLOOR_LAYERS as defaults)
   - Also created `rhino_engine/zones.py` with `make_zone_lookup()` (chunk 6 head start)
 
-- [ ] **Chunk 4 — Refactor v30.py main() to use rhino_engine imports**
-  - Replace all inline functions with imports from rhino_engine/
-  - Keep all 12FH-specific data (JSON paths, floor_z, etc.) in v30.py
-  - v30.py becomes: load JSON → call engine functions → capture
-  - VERIFY: full baseline match (wall schedule, layer audit, all counts)
+- [x] **Chunk 4 — Refactor v30.py main() to use rhino_engine imports** (2026-08-03)
+  - Created estimates/12_fox_hollow/v30.py: thin IronPython entry point using engine imports
+  - All geometry logic imported from rhino_engine/{primitives,walls,layers,zones}
+  - 12FH-specific data kept in v30.py: FLOOR_Z_DEFAULT=-8.17, WALL_TOP_Z=0, CRAWL_ZONES, file paths
+  - Added wall_schedule() to rhino_engine/walls.py (pure Python, testable)
+  - Fixed truncated baseline_wall_schedule.json fixture (trailing incomplete entry removed)
+  - 7/7 tests passing (2 new: wall_schedule aggregation + baseline fixture validation)
+  - NOTE: Full Rhino verification (wall schedule match) requires running locally with Walter's
+    12FH JSON inputs (v30_perimeter.json, basement_complete.json, cad_openings_resolved.json)
 
 ### Phase 2: Parameterize Project Config
 
