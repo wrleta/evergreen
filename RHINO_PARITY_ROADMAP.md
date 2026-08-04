@@ -59,18 +59,22 @@ all counts and measurements must match within 0.01 tolerance.
 
 ### Phase 2: Parameterize Project Config
 
-- [ ] **Chunk 5 — Define project_config.json schema**
-  - Document the JSON structure needed to build ANY project:
-    - project.name, project.slug
+- [x] **Chunk 5 — Define project_config.json schema** (2026-08-04)
+  - Schema: `rhino_engine/project_config_schema.json` (JSON Schema Draft 7)
+    - project: { name, slug, description }
     - floors[]: { name, floor_z, wall_top_z, zones[] }
-    - zones[]: { name, boundary, floor_z } (replaces hardcoded floor_z())
-    - perimeter: { outer_polygon, segment_thickness }
-    - interior_partitions[]
-    - openings[]
-    - structure: { beams, posts, footings, stairs, areaways }
-    - layers: { name → rgb } (overridable defaults)
-  - Write schema as JSON Schema + example using 12FH data
-  - VERIFY: schema validates against existing 12FH JSONs
+    - zones[]: { name, floor_z, bounds, exclude_margin }
+    - perimeter: { outer_polygon: { vertices, segment_thickness, segment_labels } }
+    - interior_partitions[]: { id, dir, t, type, cat, x/y/x0/x1/y0/y1, note }
+    - diagonals[]: { id, p1, p2, t, type, cat, note }
+    - openings[]: { id, dir, cx, cy, width, height, z_bot, z_top, type }
+    - structure: { beams[], posts[], footings[], stairs[], areaways[] }
+    - layers: { name -> [R,G,B] } (overridable defaults)
+  - Validator: `rhino_engine/config_validator.py` (minimal Draft 7, IronPython 2.7 compatible)
+  - Example: `estimates/12_fox_hollow/project_config.json`
+    - 14-vertex outer polygon, 54 interior partitions (4 struct, 1 demo), 2 diagonals, 1 beam
+    - Crawl zone (floor_z=-3.0 in NW corner)
+  - 9/9 tests passing (2 new: schema structure + 12FH validation)
 
 - [ ] **Chunk 6 — Build generic floor_z() from zone config**
   - Replace hardcoded `if x < -19.65` with point-in-polygon zone lookup

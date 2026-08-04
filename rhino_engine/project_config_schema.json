@@ -1,0 +1,224 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RhinoEngine Project Config",
+  "description": "Configuration for building a 3D model in Rhino for quantity takeoff",
+  "type": "object",
+  "required": ["project", "floors", "perimeter"],
+  "properties": {
+    "project": {
+      "type": "object",
+      "description": "Project identity",
+      "required": ["name", "slug"],
+      "properties": {
+        "name":        { "type": "string", "description": "Human-readable project name" },
+        "slug":        { "type": "string", "pattern": "^[a-z0-9_]+$", "description": "Machine-readable id, e.g. 12_fox_hollow" },
+        "description": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+
+    "floors": {
+      "type": "array",
+      "minItems": 1,
+      "description": "One entry per building level (basement, first floor, etc.)",
+      "items": {
+        "type": "object",
+        "required": ["name", "floor_z", "wall_top_z"],
+        "properties": {
+          "name":       { "type": "string" },
+          "floor_z":    { "type": "number", "description": "Slab elevation in Rhino world feet" },
+          "wall_top_z": { "type": "number", "description": "Top-of-wall elevation in Rhino world feet" },
+          "zones": {
+            "type": "array",
+            "default": [],
+            "description": "Sub-zones with different floor elevations (e.g. crawl spaces)",
+            "items": {
+              "type": "object",
+              "required": ["name", "floor_z", "bounds"],
+              "properties": {
+                "name":           { "type": "string" },
+                "floor_z":        { "type": "number" },
+                "exclude_margin": { "type": "number", "default": 0.0, "description": "Points within this margin of the zone boundary use the floor default" },
+                "bounds": {
+                  "type": "object",
+                  "required": ["x_min", "x_max", "y_min", "y_max"],
+                  "properties": {
+                    "x_min": { "type": "number" },
+                    "x_max": { "type": "number" },
+                    "y_min": { "type": "number" },
+                    "y_max": { "type": "number" }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+
+    "perimeter": {
+      "type": "object",
+      "description": "Exterior foundation / perimeter wall definition",
+      "required": ["outer_polygon"],
+      "properties": {
+        "outer_polygon": {
+          "type": "object",
+          "description": "CCW polygon of outer wall face corners + per-segment thickness",
+          "required": ["vertices", "segment_thickness"],
+          "properties": {
+            "vertices": {
+              "type": "array",
+              "minItems": 3,
+              "description": "List of [x, y] outer face coordinates (CCW from SW corner)",
+              "items": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": { "type": "number" }
+              }
+            },
+            "segment_thickness": {
+              "type": "array",
+              "minItems": 1,
+              "description": "Wall thickness for segment i (vertex[i] to vertex[(i+1)%n])",
+              "items": { "type": "number", "exclusiveMinimum": 0 }
+            },
+            "segment_labels": {
+              "type": "array",
+              "description": "Optional human-readable label for each segment",
+              "items": { "type": "string" }
+            },
+            "note": { "type": "string" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "interior_partitions": {
+      "type": "array",
+      "default": [],
+      "description": "Interior walls aligned to H (horizontal) or V (vertical) axes",
+      "items": {
+        "type": "object",
+        "required": ["id", "dir", "t"],
+        "properties": {
+          "id":   { "type": "string" },
+          "dir":  { "type": "string", "enum": ["H", "V"] },
+          "t":    { "type": "number", "exclusiveMinimum": 0, "description": "Wall thickness in feet" },
+          "type": { "type": "string", "enum": ["interior", "struct", "demo"], "default": "interior", "description": "Functional type for layer assignment" },
+          "cat":  { "type": "string", "enum": ["exist", "new", "struct", "demo"], "description": "Construction category for cost estimating" },
+          "note": { "type": "string" },
+          "x":    { "type": "number", "description": "Centerline X coordinate (V walls)" },
+          "y":    { "type": "number", "description": "Centerline Y coordinate (H walls)" },
+          "x0":   { "type": "number", "description": "Start X (H walls)" },
+          "x1":   { "type": "number", "description": "End X (H walls)" },
+          "y0":   { "type": "number", "description": "Start Y (V walls)" },
+          "y1":   { "type": "number", "description": "End Y (V walls)" }
+        }
+      }
+    },
+
+    "diagonals": {
+      "type": "array",
+      "default": [],
+      "description": "Non-axis-aligned walls defined by two endpoint coordinates",
+      "items": {
+        "type": "object",
+        "required": ["id", "p1", "p2", "t"],
+        "properties": {
+          "id":   { "type": "string" },
+          "p1":   { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" }, "description": "[x, y] start point" },
+          "p2":   { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" }, "description": "[x, y] end point" },
+          "t":    { "type": "number", "exclusiveMinimum": 0 },
+          "type": { "type": "string", "enum": ["interior", "struct", "demo"], "default": "interior" },
+          "cat":  { "type": "string", "enum": ["exist", "new", "struct", "demo"] },
+          "note": { "type": "string" }
+        }
+      }
+    },
+
+    "openings": {
+      "type": "array",
+      "default": [],
+      "description": "Window and door openings to boolean-cut from walls",
+      "items": {
+        "type": "object",
+        "required": ["id", "dir", "cx", "cy", "width"],
+        "properties": {
+          "id":     { "type": "string" },
+          "dir":    { "type": "string", "enum": ["H", "V"] },
+          "cx":     { "type": "number", "description": "Opening centerline X" },
+          "cy":     { "type": "number", "description": "Opening centerline Y" },
+          "width":  { "type": "number", "exclusiveMinimum": 0, "description": "Opening width in feet" },
+          "height": { "type": "number", "exclusiveMinimum": 0 },
+          "z_bot":  { "type": "number" },
+          "z_top":  { "type": "number" },
+          "type":   { "type": "string", "enum": ["window", "door", "opening"] },
+          "note":   { "type": "string" }
+        }
+      }
+    },
+
+    "structure": {
+      "type": "object",
+      "description": "Structural elements: beams, posts, footings, stairs, areaways",
+      "properties": {
+        "beams": {
+          "type": "array",
+          "default": [],
+          "description": "Structural beam walls (large horizontal/vertical structural members)",
+          "items": {
+            "type": "object",
+            "required": ["id", "dir", "t"],
+            "properties": {
+              "id":   { "type": "string" },
+              "dir":  { "type": "string", "enum": ["H", "V"] },
+              "t":    { "type": "number", "exclusiveMinimum": 0 },
+              "y":    { "type": "number", "description": "Centerline Y (H beams)" },
+              "x":    { "type": "number", "description": "Centerline X (V beams)" },
+              "x0":   { "type": "number" },
+              "x1":   { "type": "number" },
+              "y0":   { "type": "number" },
+              "y1":   { "type": "number" },
+              "cat":  { "type": "string" },
+              "note": { "type": "string" }
+            }
+          }
+        },
+        "posts": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "object",
+            "properties": {
+              "id":       { "type": "string" },
+              "x":        { "type": "number" },
+              "y":        { "type": "number" },
+              "diameter": { "type": "number" }
+            }
+          }
+        },
+        "footings": { "type": "array", "default": [] },
+        "stairs":   { "type": "array", "default": [] },
+        "areaways": { "type": "array", "default": [] }
+      },
+      "additionalProperties": false
+    },
+
+    "layers": {
+      "type": "object",
+      "description": "Override default layer RGB colors. Keys are layer names, values are [R, G, B] (0-255).",
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 3,
+        "maxItems": 3,
+        "items": { "type": "integer", "minimum": 0, "maximum": 255 }
+      }
+    }
+  }
+}

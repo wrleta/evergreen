@@ -41,9 +41,13 @@ sys.modules['scriptcontext'] = type(sys)('scriptcontext')
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from rhino_engine.walls import compute_perimeter, build_wall_registry, trim_partitions, wall_schedule
 from rhino_engine.zones import make_zone_lookup
+from rhino_engine.config_validator import validate
 
 
 FIXTURES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures")
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SCHEMA_PATH = os.path.join(REPO_ROOT, "rhino_engine", "project_config_schema.json")
+EXAMPLE_CONFIG_PATH = os.path.join(REPO_ROOT, "estimates", "12_fox_hollow", "project_config.json")
 
 
 def test_compute_perimeter_simple_rectangle():
@@ -238,6 +242,128 @@ def test_baseline_wall_schedule():
     print("PASS: baseline wall schedule matches 12FH verified numbers")
 
 
+def test_project_config_schema_loads():
+    """Schema file must be valid JSON with required top-level structure."""
+    with open(SCHEMA_PATH) as f:
+        schema = json.load(f)
+
+    assert schema.get("type") == "object", "schema root type must be 'object'"
+    assert "required" in schema, "schema must have 'required' key"
+    assert "properties" in schema, "schema must have 'properties' key"
+
+    required = schema["required"]
+    for field in ("project", "floors", "perimeter"):
+        assert field in required, "schema must require top-level field '%s'" % field
+
+    props = schema["properties"]
+    assert "project" in props
+    assert "floors" in props
+    assert "perimeter" in props
+    assert "interior_partitions" in props
+    assert "diagonals" in props
+    assert "openings" in props
+    assert "structure" in props
+    assert "layers" in props
+
+    # project sub-schema requires name and slug
+    proj_required = props["project"].get("required", [])
+    assert "name" in proj_required, "project must require 'name'"
+    assert "slug" in proj_required, "project must require 'slug'"
+
+    # perimeter sub-schema requires outer_polygon
+    perim_required = props["perimeter"].get("required", [])
+    assert "outer_polygon" in perim_required, "perimeter must require 'outer_polygon'"
+
+    # outer_polygon requires vertices and segment_thickness
+    outer_poly = props["perimeter"]["properties"]["outer_polygon"]
+    op_required = outer_poly.get("required", [])
+    assert "vertices" in op_required, "outer_polygon must require 'vertices'"
+    assert "segment_thickness" in op_required, "outer_polygon must require 'segment_thickness'"
+
+    print("PASS: project_config schema loads and has expected structure")
+
+
+def test_project_config_12fh_validates():
+    """12FH project_config.json must load and pass schema validation."""
+    with open(SCHEMA_PATH) as f:
+        schema = json.load(f)
+    with open(EXAMPLE_CONFIG_PATH) as f:
+        config = json.load(f)
+
+    errors = validate(config, schema)
+    assert not errors, "12FH config failed schema validation:\n  " + "\n  ".join(errors)
+
+    # Structural spot checks: confirm 12FH data is present
+    proj = config["project"]
+    assert proj["slug"] == "12_fox_hollow", "slug mismatch"
+    assert proj["name"] == "12 Fox Hollow", "name mismatch"
+
+    floors = config["floors"]
+    assert len(floors) == 1, "expected 1 floor, got %d" % len(floors)
+    assert abs(floors[0]["floor_z"] - (-8.17)) < 0.001, "floor_z mismatch"
+    assert abs(floors[0]["wall_top_z"] - 0.0) < 0.001, "wall_top_z mismatch"
+
+    zones = floors[0].get("zones", [])
+    assert len(zones) == 1, "expected 1 zone (crawl), got %d" % len(zones)
+    assert zones[0]["name"] == "crawl"
+    assert abs(zones[0]["floor_z"] - (-3.0)) < 0.001, "crawl floor_z mismatch"
+
+    outer = config["perimeter"]["outer_polygon"]
+    verts = outer["vertices"]
+    thicknesses = outer["segment_thickness"]
+    assert len(verts) == 14, "expected 14 vertices (12FH polygon), got %d" % len(verts)
+    assert len(thicknesses) == 14, "segment_thickness count must match vertex count"
+    assert len(thicknesses) == len(verts), "vertex/thickness count mismatch"
+
+    # Every thickness must be positive
+    for i, t in enumerate(thicknesses):
+        assert t > 0, "segment_thickness[%d] must be positive, got %s" % (i, t)
+
+    partitions = config.get("interior_partitions", [])
+    assert len(partitions) == 54, "expected 54 interior partitions, got %d" % len(partitions)
+
+    # All partition ids must be unique
+    ids = [p["id"] for p in partitions]
+    assert len(ids) == len(set(ids)), "duplicate partition ids found"
+
+    # All partitions must have required fields
+    for p in partitions:
+        assert "id" in p, "partition missing 'id'"
+        assert "dir" in p, "partition '%s' missing 'dir'" % p.get("id", "?")
+        assert p["dir"] in ("H", "V"), "partition '%s' dir must be H or V" % p["id"]
+        assert "t" in p, "partition '%s' missing 't'" % p["id"]
+        assert p["t"] > 0, "partition '%s' thickness must be positive" % p["id"]
+        if p["dir"] == "H":
+            assert "y" in p, "H partition '%s' missing 'y'" % p["id"]
+            assert "x0" in p and "x1" in p, "H partition '%s' missing x0/x1" % p["id"]
+        else:
+            assert "x" in p, "V partition '%s' missing 'x'" % p["id"]
+            assert "y0" in p and "y1" in p, "V partition '%s' missing y0/y1" % p["id"]
+
+    # Count struct/demo types
+    struct_count = sum(1 for p in partitions if p.get("type") == "struct")
+    demo_count = sum(1 for p in partitions if p.get("type") == "demo")
+    assert struct_count == 4, "expected 4 struct partitions, got %d" % struct_count
+    assert demo_count == 1, "expected 1 demo partition, got %d" % demo_count
+
+    diagonals = config.get("diagonals", [])
+    assert len(diagonals) == 2, "expected 2 diagonal walls, got %d" % len(diagonals)
+    for d in diagonals:
+        assert "id" in d and "p1" in d and "p2" in d and "t" in d
+        assert len(d["p1"]) == 2 and len(d["p2"]) == 2
+
+    structure = config.get("structure", {})
+    beams = structure.get("beams", [])
+    assert len(beams) == 1, "expected 1 beam, got %d" % len(beams)
+    assert beams[0]["id"] == "beam_wall"
+    assert beams[0]["dir"] == "H"
+    assert abs(beams[0]["t"] - 0.67) < 0.001, "beam thickness mismatch"
+
+    print("PASS: 12FH project_config validates against schema (%d partitions, %d diagonals, %d beams)" % (
+        len(partitions), len(diagonals), len(beams)
+    ))
+
+
 if __name__ == "__main__":
     test_compute_perimeter_simple_rectangle()
     test_compute_perimeter_baseline()
@@ -246,4 +372,6 @@ if __name__ == "__main__":
     test_zone_lookup()
     test_wall_schedule_aggregation()
     test_baseline_wall_schedule()
+    test_project_config_schema_loads()
+    test_project_config_12fh_validates()
     print("\nAll tests passed.")
