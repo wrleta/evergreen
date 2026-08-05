@@ -43,30 +43,21 @@ from rhino_engine.layers import (
     setup_layers, clear_layers, layer_audit, hide_layers, show_layers,
     BASEMENT_LAYERS, MARKUP_LAYERS,
 )
-from rhino_engine.zones import make_zone_lookup
+from rhino_engine.zones import floor_z_from_floor_config
 
 # ── 12FH project file paths --------------------------------------------------
 
-PERIM_JSON    = os.path.join(_here, "v30_perimeter.json")
-BASEMENT_JSON = os.path.join(_here, "basement_complete.json")
-OPENINGS_JSON = os.path.join(_here, "rhino_views", "cad_openings_resolved.json")
-OUTPUT_JSON   = os.path.join(_here, "v30_wall_schedule.json")
-CAPTURES_DIR  = os.path.join(_here, "captures")
+PERIM_JSON          = os.path.join(_here, "v30_perimeter.json")
+BASEMENT_JSON       = os.path.join(_here, "basement_complete.json")
+OPENINGS_JSON       = os.path.join(_here, "rhino_views", "cad_openings_resolved.json")
+PROJECT_CONFIG_JSON = os.path.join(_here, "project_config.json")
+OUTPUT_JSON         = os.path.join(_here, "v30_wall_schedule.json")
+CAPTURES_DIR        = os.path.join(_here, "captures")
 
-# ── 12FH floor elevations ----------------------------------------------------
+# ── 12FH floor elevations (fallback constants if project_config.json absent) --
 
 FLOOR_Z_DEFAULT = -8.17    # main basement slab (Rhino world zero = top of slab)
 WALL_TOP_Z      =  0.0     # top of foundation wall
-
-# Crawl space in the northwest corner (measured from CAD)
-CRAWL_ZONES = [
-    {
-        "name": "crawl",
-        "floor_z": -3.0,
-        "bounds": {"x_min": -30.0, "x_max": -15.0, "y_min": 0.0, "y_max": 25.0},
-        "exclude_margin": 1.0,
-    },
-]
 
 # ── 12FH layer names (keys into BASEMENT_LAYERS) ----------------------------
 
@@ -156,8 +147,17 @@ def main():
         with open(OPENINGS_JSON) as f:
             openings = json.load(f)
 
-    # 2. Floor elevation lookup
-    floor_z = make_zone_lookup(CRAWL_ZONES, default_z=FLOOR_Z_DEFAULT)
+    # 2. Floor elevation lookup — zones come from project_config.json
+    floor_config = None
+    if os.path.isfile(PROJECT_CONFIG_JSON):
+        with open(PROJECT_CONFIG_JSON) as f:
+            project_config = json.load(f)
+        floor_config = project_config.get("floors", [{}])[0]
+    if floor_config:
+        floor_z = floor_z_from_floor_config(floor_config)
+    else:
+        from rhino_engine.zones import make_zone_lookup
+        floor_z = make_zone_lookup([], default_z=FLOOR_Z_DEFAULT)
 
     # 3. Layer setup and scene reset
     setup_layers(BASEMENT_LAYERS)

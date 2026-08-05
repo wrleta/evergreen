@@ -76,10 +76,13 @@ all counts and measurements must match within 0.01 tolerance.
     - Crawl zone (floor_z=-3.0 in NW corner)
   - 9/9 tests passing (2 new: schema structure + 12FH validation)
 
-- [ ] **Chunk 6 — Build generic floor_z() from zone config**
-  - Replace hardcoded `if x < -19.65` with point-in-polygon zone lookup
-  - Zone boundaries come from project_config.json zones[]
-  - VERIFY: same floor elevations for all 12FH wall positions
+- [x] **Chunk 6 — Build generic floor_z() from zone config** (2026-08-05)
+  - Added floor_z_from_floor_config() to rhino_engine/zones.py
+  - Reads zones[] and default floor_z from project_config.json floors[] entry
+  - Updated estimates/12_fox_hollow/v30.py to load floor config from project_config.json
+    (removed hardcoded CRAWL_ZONES; FLOOR_Z_DEFAULT/WALL_TOP_Z kept as fallback constants)
+  - 11/11 tests passing (2 new: test_floor_z_from_floor_config + test_floor_z_from_12fh_config)
+  - VERIFY: crawl zone (-19.65, 11.65) -> -3.0, main zone (0.0, 20.0) -> -8.17 both confirmed
 
 - [ ] **Chunk 7 — Create project_builder.py (the generic entry point)**
   - Takes: --project <slug> (reads estimates/<slug>/project_config.json)

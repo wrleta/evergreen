@@ -33,3 +33,18 @@ def make_zone_lookup(zones, default_z):
         return default_z
 
     return floor_z
+
+
+def floor_z_from_floor_config(floor_config):
+    """Create a floor_z(x, y) function from a project_config.json floor entry.
+
+    Args:
+        floor_config: A floor dict with:
+            - "floor_z": default elevation for points outside all zones
+            - "zones": optional list of zone dicts (same format as make_zone_lookup)
+
+    Returns a function floor_z(x, y) -> float.
+    """
+    default_z = floor_config["floor_z"]
+    zones = floor_config.get("zones", [])
+    return make_zone_lookup(zones, default_z)

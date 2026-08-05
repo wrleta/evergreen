@@ -40,7 +40,7 @@ sys.modules['scriptcontext'] = type(sys)('scriptcontext')
 # Now we can import the engine modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from rhino_engine.walls import compute_perimeter, build_wall_registry, trim_partitions, wall_schedule
-from rhino_engine.zones import make_zone_lookup
+from rhino_engine.zones import make_zone_lookup, floor_z_from_floor_config
 from rhino_engine.config_validator import validate
 
 
@@ -364,6 +364,66 @@ def test_project_config_12fh_validates():
     ))
 
 
+def test_floor_z_from_floor_config():
+    """floor_z_from_floor_config should build correct lookup from a floor config dict."""
+    floor_config = {
+        "name": "basement",
+        "floor_z": -8.17,
+        "wall_top_z": 0.0,
+        "zones": [
+            {
+                "name": "crawl",
+                "floor_z": -3.0,
+                "exclude_margin": 1.0,
+                "bounds": {"x_min": -30.0, "x_max": -15.0, "y_min": 0.0, "y_max": 25.0},
+            }
+        ],
+    }
+    floor_z = floor_z_from_floor_config(floor_config)
+
+    assert floor_z(-22, 12) == -3.0, "interior crawl zone should be -3.0"
+    assert floor_z(0, 12) == -8.17, "outside zones should be default"
+    assert floor_z(-15.5, 12) == -8.17, "within exclude_margin should be default"
+
+    # Floor config with no zones should always return default_z
+    simple_config = {"floor_z": -9.0}
+    flat_floor_z = floor_z_from_floor_config(simple_config)
+    assert flat_floor_z(0, 0) == -9.0, "no-zones floor should return default_z"
+    assert flat_floor_z(-100, -100) == -9.0, "no-zones floor always returns default_z"
+
+    print("PASS: floor_z_from_floor_config")
+
+
+def test_floor_z_from_12fh_config():
+    """Config-driven floor_z should match hardcoded values for key 12FH wall positions."""
+    with open(EXAMPLE_CONFIG_PATH) as f:
+        config = json.load(f)
+    floor_config = config["floors"][0]
+    floor_z = floor_z_from_floor_config(floor_config)
+
+    # Main basement slab (default zone)
+    assert abs(floor_z(0.0, 20.0) - (-8.17)) < 0.001, \
+        "main floor should be -8.17, got %.4f" % floor_z(0.0, 20.0)
+    assert abs(floor_z(30.0, 25.0) - (-8.17)) < 0.001, \
+        "east wing should be -8.17, got %.4f" % floor_z(30.0, 25.0)
+
+    # Crawl space zone (NW corner, x:-30 to -15, y:0 to 25, margin=1.0)
+    # Effective range: x:-29 to -16, y:1 to 24
+    # crawl_east_fdn wall at x=-19.65, midpoint y=(2.3+21.0)/2=11.65
+    assert abs(floor_z(-19.65, 11.65) - (-3.0)) < 0.001, \
+        "crawl_east_fdn midpoint should be -3.0, got %.4f" % floor_z(-19.65, 11.65)
+
+    # Wall near crawl zone but outside (should be default)
+    assert abs(floor_z(-14.5, 12.0) - (-8.17)) < 0.001, \
+        "just east of crawl zone should be -8.17, got %.4f" % floor_z(-14.5, 12.0)
+
+    # Within the exclude_margin band of the crawl zone east edge (x=-15, margin=1 -> effective x_max=-16)
+    assert abs(floor_z(-15.5, 12.0) - (-8.17)) < 0.001, \
+        "within crawl zone margin should be -8.17, got %.4f" % floor_z(-15.5, 12.0)
+
+    print("PASS: floor_z from 12FH project_config (crawl zone and default zone both correct)")
+
+
 if __name__ == "__main__":
     test_compute_perimeter_simple_rectangle()
     test_compute_perimeter_baseline()
@@ -374,4 +434,6 @@ if __name__ == "__main__":
     test_baseline_wall_schedule()
     test_project_config_schema_loads()
     test_project_config_12fh_validates()
+    test_floor_z_from_floor_config()
+    test_floor_z_from_12fh_config()
     print("\nAll tests passed.")
