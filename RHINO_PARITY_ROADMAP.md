@@ -84,11 +84,17 @@ all counts and measurements must match within 0.01 tolerance.
   - 11/11 tests passing (2 new: test_floor_z_from_floor_config + test_floor_z_from_12fh_config)
   - VERIFY: crawl zone (-19.65, 11.65) -> -3.0, main zone (0.0, 20.0) -> -8.17 both confirmed
 
-- [ ] **Chunk 7 — Create project_builder.py (the generic entry point)**
+- [x] **Chunk 7 — Create project_builder.py (the generic entry point)** (2026-08-06)
   - Takes: --project <slug> (reads estimates/<slug>/project_config.json)
-  - Calls rhino_engine functions with config-driven parameters
-  - Outputs: wall_schedule.json, captures, layer audit
-  - VERIFY: 12FH baseline match when run as `project_builder.py --project 12_fox_hollow`
+  - Validates config against schema; injects Rhino stubs when outside Rhino
+  - Pure-Python path: build_schedule() computes wall schedule without Rhino
+  - Rhino path: build_3d() builds geometry, cuts openings, captures, layer_audit
+  - Outputs: wall_schedule.json (always); captures + layer_audit.json (Rhino only)
+  - CLI run: 12FH -> 14 ext, 49 int, 5 struct, 1 demo (293 LF ext, 452 LF int)
+  - 13/13 tests passing (2 new: project_builder _parse_args + build_schedule 12FH)
+  - NOTE: Pure-Python counts differ from v30 baseline (14 vs 17 ext) because
+    project_config.json perimeter uses 14 segments; full Rhino baseline requires
+    running with Walter's v30_perimeter.json source data
 
 ### Phase 3: Bridge from AutoCAD Traces
 

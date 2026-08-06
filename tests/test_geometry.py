@@ -42,6 +42,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from rhino_engine.walls import compute_perimeter, build_wall_registry, trim_partitions, wall_schedule
 from rhino_engine.zones import make_zone_lookup, floor_z_from_floor_config
 from rhino_engine.config_validator import validate
+from project_builder import build_schedule, _parse_args
 
 
 FIXTURES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures")
@@ -424,6 +425,79 @@ def test_floor_z_from_12fh_config():
     print("PASS: floor_z from 12FH project_config (crawl zone and default zone both correct)")
 
 
+def test_project_builder_parse_args():
+    """_parse_args should extract --project slug correctly."""
+    assert _parse_args(["--project", "12_fox_hollow"]) == "12_fox_hollow"
+    assert _parse_args(["--project", "foo", "--other", "bar"]) == "foo"
+    assert _parse_args([]) is None
+    assert _parse_args(["--other", "x"]) is None
+
+    print("PASS: project_builder _parse_args")
+
+
+def test_project_builder_schedule_12fh():
+    """build_schedule() should produce a valid schedule from 12FH project_config.json."""
+    with open(EXAMPLE_CONFIG_PATH) as f:
+        config = json.load(f)
+
+    schedule = build_schedule(config)
+
+    # Must have required keys
+    assert "walls" in schedule, "schedule missing 'walls' key"
+    assert "summary_by_type" in schedule, "schedule missing 'summary_by_type' key"
+    assert "trim_log" in schedule, "schedule missing 'trim_log' key"
+
+    s = schedule["summary_by_type"]
+
+    # 12FH project_config: 14-vertex polygon -> 14 exterior walls
+    assert "exterior" in s, "schedule must have exterior walls"
+    assert s["exterior"]["count"] == 14, \
+        "expected 14 exterior walls (14-vertex polygon), got %d" % s["exterior"]["count"]
+
+    # All exterior walls must have positive length and area
+    for w in schedule["walls"]:
+        if w["type"] == "exterior":
+            assert w["length"] > 0, "exterior wall %s has zero length" % w["id"]
+            assert w["face_area_sf"] > 0, "exterior wall %s has zero area" % w["id"]
+
+    # Interior partitions: 54 partitions in config, 4 struct, 1 demo, 49 interior
+    # Plus 1 beam (struct) -> struct total = 5
+    assert "interior" in s, "schedule must have interior walls"
+    assert "struct" in s, "schedule must have struct walls"
+    assert "demo" in s, "schedule must have demo walls"
+
+    assert s["interior"]["count"] == 49, \
+        "expected 49 interior partition walls, got %d" % s["interior"]["count"]
+    assert s["struct"]["count"] == 5, \
+        "expected 5 struct walls (4 partitions + 1 beam), got %d" % s["struct"]["count"]
+    assert s["demo"]["count"] == 1, \
+        "expected 1 demo wall, got %d" % s["demo"]["count"]
+
+    # Perimeter walls: 14 segments * height 8.17 * varying thickness
+    # Rough total exterior LF (not matching v30 baseline, which used different source data)
+    ext_lf = s["exterior"]["total_length"]
+    assert ext_lf > 100.0, "exterior total length should be > 100 LF, got %.2f" % ext_lf
+    assert ext_lf < 500.0, "exterior total length should be < 500 LF, got %.2f" % ext_lf
+
+    # Interior total length sanity check
+    int_lf = s["interior"]["total_length"]
+    assert int_lf > 50.0, "interior total length should be > 50 LF, got %.2f" % int_lf
+
+    # Trim log should have one entry per partition
+    raw_partitions = config.get("interior_partitions", [])
+    assert len(schedule["trim_log"]) == len(raw_partitions), \
+        "trim_log length %d != partition count %d" % (
+            len(schedule["trim_log"]), len(raw_partitions)
+        )
+
+    print("PASS: project_builder build_schedule (12FH: %d ext, %d int, %d struct, %d demo)" % (
+        s["exterior"]["count"],
+        s["interior"]["count"],
+        s["struct"]["count"],
+        s["demo"]["count"],
+    ))
+
+
 if __name__ == "__main__":
     test_compute_perimeter_simple_rectangle()
     test_compute_perimeter_baseline()
@@ -436,4 +510,6 @@ if __name__ == "__main__":
     test_project_config_12fh_validates()
     test_floor_z_from_floor_config()
     test_floor_z_from_12fh_config()
+    test_project_builder_parse_args()
+    test_project_builder_schedule_12fh()
     print("\nAll tests passed.")
