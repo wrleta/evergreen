@@ -43,12 +43,25 @@ from rhino_engine.walls import compute_perimeter, build_wall_registry, trim_part
 from rhino_engine.zones import make_zone_lookup, floor_z_from_floor_config
 from rhino_engine.config_validator import validate
 from project_builder import build_schedule, _parse_args
+from dxf_converter import (
+    classify_line, polygon_area, merge_collinear_lines,
+    extract_perimeter, extract_interior_walls,
+)
+
+try:
+    import ezdxf as _ezdxf
+    _HAS_EZDXF = True
+except ImportError:
+    _ezdxf = None
+    _HAS_EZDXF = False
 
 
 FIXTURES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures")
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCHEMA_PATH = os.path.join(REPO_ROOT, "rhino_engine", "project_config_schema.json")
 EXAMPLE_CONFIG_PATH = os.path.join(REPO_ROOT, "estimates", "12_fox_hollow", "project_config.json")
+GM_CONFIG_PATH = os.path.join(REPO_ROOT, "estimates", "8_greatmeadow", "project_config.json")
+GM_LAYER_MAP_PATH = os.path.join(REPO_ROOT, "estimates", "8_greatmeadow", "dxf_layer_map.json")
 
 
 def test_compute_perimeter_simple_rectangle():
@@ -498,6 +511,200 @@ def test_project_builder_schedule_12fh():
     ))
 
 
+def test_dxf_converter_helpers():
+    """classify_line, polygon_area, and merge_collinear_lines pure-Python correctness."""
+    # classify_line: horizontal, vertical, diagonal
+    assert classify_line((0, 0), (10, 0)) == 'H', "horizontal line should be H"
+    assert classify_line((0, 0), (0, 10)) == 'V', "vertical line should be V"
+    assert classify_line((0, 0), (10, 10)) == 'D', "45-deg line should be D"
+    assert classify_line((0, 0), (10, 0.03)) == 'H', "near-horizontal should be H (within 2 deg)"
+    assert classify_line((0, 0), (0, 0)) is None, "zero-length should be None"
+
+    # polygon_area: CCW rectangle should be positive
+    rect_ccw = [(0, 0), (10, 0), (10, 5), (0, 5)]
+    area_ccw = polygon_area(rect_ccw)
+    assert abs(area_ccw - 50.0) < 0.001, "CCW area should be +50, got %.4f" % area_ccw
+
+    # CW orientation gives negative area
+    rect_cw = list(reversed(rect_ccw))
+    area_cw = polygon_area(rect_cw)
+    assert abs(area_cw + 50.0) < 0.001, "CW area should be -50, got %.4f" % area_cw
+
+    # Triangle
+    tri = [(0, 0), (4, 0), (0, 3)]
+    assert abs(polygon_area(tri) - 6.0) < 0.001, "triangle area should be 6, got %.4f" % polygon_area(tri)
+
+    # merge_collinear_lines: two overlapping H segments at same y -> merged
+    lines = [(5.0, 0.0, 8.0), (5.0, 6.0, 12.0)]  # gap < tol=1.0
+    merged = merge_collinear_lines(lines, merge_tol=1.0)
+    assert len(merged) == 1, "two overlapping spans should merge to 1, got %d" % len(merged)
+    assert abs(merged[0][0] - 5.0) < 0.01 and abs(merged[0][1] - 0.0) < 0.01 and abs(merged[0][2] - 12.0) < 0.01
+
+    # Two non-overlapping spans at same y, gap > tol -> stay separate
+    lines2 = [(5.0, 0.0, 4.0), (5.0, 8.0, 12.0)]
+    merged2 = merge_collinear_lines(lines2, merge_tol=0.1)
+    assert len(merged2) == 2, "non-overlapping spans should stay separate, got %d" % len(merged2)
+
+    # Different y values -> separate groups
+    lines3 = [(5.0, 0.0, 10.0), (7.0, 0.0, 10.0)]
+    merged3 = merge_collinear_lines(lines3, merge_tol=0.1)
+    assert len(merged3) == 2, "different axis vals should stay separate, got %d" % len(merged3)
+
+    print("PASS: dxf_converter helpers (classify_line, polygon_area, merge_collinear_lines)")
+
+
+def test_dxf_converter_extract_perimeter():
+    """extract_perimeter should find the largest closed LWPOLYLINE on the target layer."""
+    if not _HAS_EZDXF:
+        print("SKIP: test_dxf_converter_extract_perimeter (ezdxf not installed)")
+        return
+
+    doc = _ezdxf.new('R2010')
+    msp = doc.modelspace()
+
+    # Rectangular perimeter: 50 x 30 feet, CCW
+    pts = [(0, 0), (50, 0), (50, 30), (0, 30)]
+    lwpoly = msp.add_lwpolyline(pts, dxfattribs={'layer': 'PERIM'})
+    lwpoly.closed = True
+
+    # A smaller closed polyline on a different layer (should be ignored)
+    small_pts = [(5, 5), (10, 5), (10, 8), (5, 8)]
+    sm = msp.add_lwpolyline(small_pts, dxfattribs={'layer': 'OTHER'})
+    sm.closed = True
+
+    # An open polyline on PERIM layer (should be ignored)
+    open_pts = [(1, 1), (20, 1), (20, 10)]
+    msp.add_lwpolyline(open_pts, dxfattribs={'layer': 'PERIM'})
+
+    verts = extract_perimeter(doc, ['PERIM'])
+
+    assert len(verts) == 4, "expected 4 vertices, got %d" % len(verts)
+    # CCW: polygon_area should be positive
+    area = polygon_area(verts)
+    assert area > 0, "perimeter polygon should be CCW (positive area), got %.2f" % area
+    assert abs(abs(area) - 50.0 * 30.0) < 0.5, "area should be ~1500 sq ft, got %.2f" % abs(area)
+
+    # Perimeter on OTHER layer should not appear
+    verts_other = extract_perimeter(doc, ['NONEXISTENT'])
+    assert verts_other == [], "no polygon on missing layer should return []"
+
+    # Case-insensitive layer matching
+    verts_lower = extract_perimeter(doc, ['perim'])
+    assert len(verts_lower) == 4, "layer matching should be case-insensitive"
+
+    print("PASS: dxf_converter extract_perimeter (%d vertices, area=%.0f sf)" % (len(verts), abs(area)))
+
+
+def test_dxf_converter_extract_walls():
+    """extract_interior_walls should classify LINE entities into H/V partitions."""
+    if not _HAS_EZDXF:
+        print("SKIP: test_dxf_converter_extract_walls (ezdxf not installed)")
+        return
+
+    doc = _ezdxf.new('R2010')
+    msp = doc.modelspace()
+
+    # Two horizontal lines on INT-WALL (should merge if collinear, stay separate if not)
+    msp.add_line((2.0, 5.0, 0), (18.0, 5.0, 0), dxfattribs={'layer': 'INT-WALL'})
+    msp.add_line((5.0, 12.0, 0), (15.0, 12.0, 0), dxfattribs={'layer': 'INT-WALL'})
+
+    # Two vertical lines on INT-WALL
+    msp.add_line((10.0, 1.0, 0), (10.0, 20.0, 0), dxfattribs={'layer': 'INT-WALL'})
+
+    # One structural line
+    msp.add_line((0.0, 8.0, 0), (50.0, 8.0, 0), dxfattribs={'layer': 'STRUCT'})
+
+    # One diagonal line (should become a diagonal, not a partition)
+    msp.add_line((3.0, 3.0, 0), (8.0, 8.0, 0), dxfattribs={'layer': 'INT-WALL'})
+
+    layer_cfg = {
+        'INT-WALL': {'type': 'interior', 't': 0.5},
+        'STRUCT':   {'type': 'struct',   't': 0.67},
+    }
+
+    partitions, diagonals = extract_interior_walls(doc, layer_cfg, unit_scale=1.0)
+
+    # H partitions: 2 horizontal INT-WALL lines
+    h_parts = [p for p in partitions if p['dir'] == 'H' and p.get('type', 'interior') == 'interior']
+    assert len(h_parts) == 2, "expected 2 H interior partitions, got %d" % len(h_parts)
+
+    # V partitions: 1 vertical INT-WALL line
+    v_parts = [p for p in partitions if p['dir'] == 'V']
+    assert len(v_parts) == 1, "expected 1 V partition, got %d" % len(v_parts)
+    assert abs(v_parts[0]['x'] - 10.0) < 0.01, "V partition x should be 10.0"
+    assert abs(v_parts[0]['y0'] - 1.0) < 0.01, "V partition y0 should be 1.0"
+    assert abs(v_parts[0]['y1'] - 20.0) < 0.01, "V partition y1 should be 20.0"
+
+    # Structural: 1 H struct wall
+    struct_parts = [p for p in partitions if p.get('type') == 'struct']
+    assert len(struct_parts) == 1, "expected 1 struct partition, got %d" % len(struct_parts)
+    assert abs(struct_parts[0]['t'] - 0.67) < 0.001, "struct thickness should be 0.67"
+
+    # Diagonal: the 45-deg line
+    assert len(diagonals) == 1, "expected 1 diagonal, got %d" % len(diagonals)
+    d = diagonals[0]
+    assert 'p1' in d and 'p2' in d and 't' in d, "diagonal must have p1, p2, t"
+
+    # All partition ids must be unique
+    ids = [p['id'] for p in partitions]
+    assert len(ids) == len(set(ids)), "duplicate partition ids: %s" % ids
+
+    print("PASS: dxf_converter extract_interior_walls (%d partitions, %d diagonals)" % (
+        len(partitions), len(diagonals)
+    ))
+
+
+def test_dxf_layer_map_8gm():
+    """8_greatmeadow dxf_layer_map.json and project_config.json must load and be valid."""
+    # Layer map structure
+    with open(GM_LAYER_MAP_PATH) as f:
+        layer_map = json.load(f)
+
+    # Strip private/comment keys
+    public = {k: v for k, v in layer_map.items() if not k.startswith("_")}
+    assert "perimeter" in public, "layer map must have 'perimeter'"
+    assert "interior" in public, "layer map must have 'interior'"
+    assert "structural" in public, "layer map must have 'structural'"
+    assert "demo" in public, "layer map must have 'demo'"
+    assert "hatch" in public, "layer map must have 'hatch'"
+
+    # Perimeter is a non-empty list of strings
+    perim = public["perimeter"]
+    assert isinstance(perim, list) and len(perim) > 0, "perimeter must be a non-empty list"
+    assert all(isinstance(s, str) for s in perim), "perimeter entries must be strings"
+
+    # Interior is a dict mapping layer->config with positive thickness
+    interior = public["interior"]
+    assert isinstance(interior, dict), "interior must be a dict"
+    for ln, cfg in interior.items():
+        assert isinstance(cfg, dict), "interior entry %s must be a dict" % ln
+        assert "t" in cfg and cfg["t"] > 0, "interior entry %s must have positive t" % ln
+
+    # 8_greatmeadow project_config.json must be valid per schema
+    with open(SCHEMA_PATH) as f:
+        schema = json.load(f)
+    with open(GM_CONFIG_PATH) as f:
+        gm_config = json.load(f)
+
+    from rhino_engine.config_validator import validate
+    errors = validate(gm_config, schema)
+    assert not errors, "8_greatmeadow config failed schema validation:\n  " + "\n  ".join(errors)
+
+    assert gm_config["project"]["slug"] == "8_greatmeadow", "slug must be 8_greatmeadow"
+    floors = gm_config["floors"]
+    assert len(floors) >= 1, "must have at least 1 floor"
+    assert abs(floors[0]["floor_z"] - (-8.17)) < 0.001, "floor_z must be -8.17"
+
+    verts = gm_config["perimeter"]["outer_polygon"]["vertices"]
+    assert len(verts) >= 3, "perimeter must have >= 3 vertices"
+    thicknesses = gm_config["perimeter"]["outer_polygon"]["segment_thickness"]
+    assert len(thicknesses) == len(verts), "segment_thickness count must match vertices"
+
+    print("PASS: 8_greatmeadow layer map + project_config.json valid (%d perimeter layers, %d polygon vertices)" % (
+        len(perim), len(verts)
+    ))
+
+
 if __name__ == "__main__":
     test_compute_perimeter_simple_rectangle()
     test_compute_perimeter_baseline()
@@ -512,4 +719,8 @@ if __name__ == "__main__":
     test_floor_z_from_12fh_config()
     test_project_builder_parse_args()
     test_project_builder_schedule_12fh()
+    test_dxf_converter_helpers()
+    test_dxf_converter_extract_perimeter()
+    test_dxf_converter_extract_walls()
+    test_dxf_layer_map_8gm()
     print("\nAll tests passed.")
