@@ -1,0 +1,65 @@
+{
+  "walls": [
+    {
+      "id": "perim_0",
+      "type": "exterior",
+      "dir": "H",
+      "t": 0.833,
+      "length": 50.0,
+      "height": 8.17,
+      "face_area_sf": 408.5,
+      "volume_cf": 340.2805,
+      "room": "perimeter",
+      "note": "",
+      "cat": ""
+    },
+    {
+      "id": "perim_1",
+      "type": "exterior",
+      "dir": "V",
+      "t": 0.833,
+      "length": 30.0,
+      "height": 8.17,
+      "face_area_sf": 245.1,
+      "volume_cf": 204.1683,
+      "room": "perimeter",
+      "note": "",
+      "cat": ""
+    },
+    {
+      "id": "perim_2",
+      "type": "exterior",
+      "dir": "H",
+      "t": 0.833,
+      "length": 50.0,
+      "height": 8.17,
+      "face_area_sf": 408.5,
+      "volume_cf": 340.2805,
+      "room": "perimeter",
+      "note": "",
+      "cat": ""
+    },
+    {
+      "id": "perim_3",
+      "type": "exterior",
+      "dir": "V",
+      "t": 0.833,
+      "length": 30.0,
+      "height": 8.17,
+      "face_area_sf": 245.1,
+      "volume_cf": 204.1683,
+      "room": "perimeter",
+      "note": "",
+      "cat": ""
+    }
+  ],
+  "summary_by_type": {
+    "exterior": {
+      "count": 4,
+      "total_length": 160.0,
+      "total_face_area_sf": 1307.2,
+      "total_volume_cf": 1088.8976
+    }
+  },
+  "trim_log": []
+}

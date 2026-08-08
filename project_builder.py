@@ -422,28 +422,82 @@ def build_3d(config, output_dir=None):
     return schedule
 
 
+# ── Verification helpers ------------------------------------------------------
+
+def compare_schedules(actual, reference, tolerance=0.05):
+    """Compare actual wall schedule against reference quantities.
+
+    Returns (ok, mismatches). ok=True means all checked fields are within
+    tolerance. Reference values of None are skipped (not-yet-measured).
+
+    Args:
+        actual: dict with "summary_by_type" key (from build_schedule)
+        reference: dict mapping type -> {count, total_length, total_face_area_sf}
+        tolerance: fractional tolerance (default 0.05 = 5%)
+
+    Returns:
+        (ok, mismatches): ok=bool, mismatches=list of human-readable strings
+    """
+    mismatches = []
+    actual_s = actual.get("summary_by_type", {})
+
+    for wtype, ref_vals in reference.items():
+        act_vals = actual_s.get(wtype, {})
+        for field in ("count", "total_length", "total_face_area_sf"):
+            ref_val = ref_vals.get(field)
+            if ref_val is None:
+                continue
+            act_val = act_vals.get(field)
+            if act_val is None:
+                mismatches.append(
+                    "%s.%s: actual missing (ref=%.2f)" % (wtype, field, float(ref_val))
+                )
+                continue
+            if ref_val == 0:
+                if act_val != 0:
+                    mismatches.append(
+                        "%s.%s: expected 0, got %.2f" % (wtype, field, act_val)
+                    )
+                continue
+            diff = abs(act_val - ref_val) / float(abs(ref_val))
+            if diff > tolerance:
+                mismatches.append(
+                    "%s.%s: actual=%.2f ref=%.2f diff=%.1f%% (> %.1f%%)" % (
+                        wtype, field,
+                        act_val, ref_val,
+                        diff * 100.0, tolerance * 100.0,
+                    )
+                )
+
+    return len(mismatches) == 0, mismatches
+
+
 # ── CLI entry point -----------------------------------------------------------
 
 def _parse_args(argv):
-    """Minimal arg parser: --project <slug>, no argparse dependency."""
+    """Minimal arg parser: --project <slug> [--verify], no argparse dependency."""
     slug = None
+    verify = False
     i = 0
     while i < len(argv):
         if argv[i] == "--project" and i + 1 < len(argv):
             slug = argv[i + 1]
             i += 2
+        elif argv[i] == "--verify":
+            verify = True
+            i += 1
         else:
             i += 1
-    return slug
+    return slug, verify
 
 
 def main(argv=None):
     """CLI entry point."""
     argv = argv if argv is not None else sys.argv[1:]
-    slug = _parse_args(argv)
+    slug, do_verify = _parse_args(argv)
 
     if not slug:
-        sys.stderr.write("Usage: project_builder.py --project <slug>\n")
+        sys.stderr.write("Usage: project_builder.py --project <slug> [--verify]\n")
         sys.exit(1)
 
     config_path = os.path.join(_here, "estimates", slug, "project_config.json")
@@ -488,6 +542,27 @@ def main(argv=None):
     n_cut = schedule.get("n_openings_cut")
     if n_cut is not None:
         print("  Openings cut: %d" % n_cut)
+
+    if do_verify:
+        ref_path = os.path.join(_here, "estimates", slug, "acad_takeoff_full.py")
+        if not os.path.isfile(ref_path):
+            print("VERIFY: no reference file found at %s" % ref_path)
+        else:
+            ref_ns = {}
+            exec(open(ref_path).read(), ref_ns)  # noqa: S102
+            reference = ref_ns.get("REFERENCE", {})
+            verified = ref_ns.get("REFERENCE_VERIFIED", False)
+            if not verified:
+                print("VERIFY: reference not yet filled in (REFERENCE_VERIFIED=False); skipping")
+            else:
+                ok, mismatches = compare_schedules(schedule, reference)
+                if ok:
+                    print("VERIFY: all quantities within tolerance")
+                else:
+                    print("VERIFY: MISMATCHES FOUND:")
+                    for m in mismatches:
+                        print("  " + m)
+                    sys.exit(1)
 
     return schedule
 

@@ -42,7 +42,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from rhino_engine.walls import compute_perimeter, build_wall_registry, trim_partitions, wall_schedule
 from rhino_engine.zones import make_zone_lookup, floor_z_from_floor_config
 from rhino_engine.config_validator import validate
-from project_builder import build_schedule, _parse_args
+from project_builder import build_schedule, compare_schedules, _parse_args
 from dxf_converter import (
     classify_line, polygon_area, merge_collinear_lines,
     extract_perimeter, extract_interior_walls,
@@ -439,11 +439,21 @@ def test_floor_z_from_12fh_config():
 
 
 def test_project_builder_parse_args():
-    """_parse_args should extract --project slug correctly."""
-    assert _parse_args(["--project", "12_fox_hollow"]) == "12_fox_hollow"
-    assert _parse_args(["--project", "foo", "--other", "bar"]) == "foo"
-    assert _parse_args([]) is None
-    assert _parse_args(["--other", "x"]) is None
+    """_parse_args should extract --project slug and --verify flag correctly."""
+    slug, verify = _parse_args(["--project", "12_fox_hollow"])
+    assert slug == "12_fox_hollow" and not verify
+
+    slug2, verify2 = _parse_args(["--project", "foo", "--verify"])
+    assert slug2 == "foo" and verify2
+
+    slug3, verify3 = _parse_args(["--project", "foo", "--other", "bar"])
+    assert slug3 == "foo" and not verify3
+
+    slug4, verify4 = _parse_args([])
+    assert slug4 is None and not verify4
+
+    slug5, verify5 = _parse_args(["--other", "x"])
+    assert slug5 is None and not verify5
 
     print("PASS: project_builder _parse_args")
 
@@ -705,6 +715,73 @@ def test_dxf_layer_map_8gm():
     ))
 
 
+def test_compare_schedules():
+    """compare_schedules should pass within 5% and fail outside it."""
+    actual = {
+        "summary_by_type": {
+            "exterior": {"count": 10, "total_length": 100.0, "total_face_area_sf": 817.0},
+            "interior": {"count": 5,  "total_length": 50.0,  "total_face_area_sf": 408.5},
+        }
+    }
+
+    # Exact match passes
+    ref_exact = {"exterior": {"count": 10, "total_length": 100.0, "total_face_area_sf": 817.0}}
+    ok, mm = compare_schedules(actual, ref_exact)
+    assert ok, "Exact match should pass: %s" % mm
+
+    # 3% over passes at 5% tolerance
+    ref_close = {"exterior": {"total_length": 103.0}}
+    ok2, mm2 = compare_schedules(actual, ref_close, tolerance=0.05)
+    assert ok2, "3pct over should pass at 5pct tolerance: %s" % mm2
+
+    # 10% under fails at 5% tolerance
+    ref_far = {"exterior": {"total_length": 90.0}}
+    ok3, mm3 = compare_schedules(actual, ref_far, tolerance=0.05)
+    assert not ok3, "10pct under should fail at 5pct tolerance"
+    assert any("exterior.total_length" in m for m in mm3), "mismatch must name the field"
+
+    # None reference values are skipped
+    ref_none = {"exterior": {"count": None, "total_length": None}, "interior": {"count": 5}}
+    ok4, mm4 = compare_schedules(actual, ref_none)
+    assert ok4, "None reference values should be skipped: %s" % mm4
+
+    # Missing type in actual fails
+    ref_missing = {"demo": {"count": 1, "total_length": 10.0}}
+    ok5, mm5 = compare_schedules(actual, ref_missing)
+    assert not ok5, "Missing type in actual should fail"
+
+    print("PASS: compare_schedules tolerance checking")
+
+
+def test_project_builder_schedule_8gm():
+    """build_schedule should run for 8_greatmeadow placeholder config without error."""
+    with open(GM_CONFIG_PATH) as f:
+        config = json.load(f)
+
+    schedule = build_schedule(config)
+
+    assert "walls" in schedule, "schedule missing 'walls'"
+    assert "summary_by_type" in schedule, "schedule missing 'summary_by_type'"
+    assert "trim_log" in schedule, "schedule missing 'trim_log'"
+
+    s = schedule["summary_by_type"]
+    assert "exterior" in s, "8gm placeholder must have exterior walls"
+
+    # Placeholder is 50x30 ft rectangle -> 4 exterior walls, 160 LF
+    ext = s["exterior"]
+    assert ext["count"] == 4, "placeholder has 4 vertices -> 4 exterior walls, got %d" % ext["count"]
+    assert abs(ext["total_length"] - 160.0) < 0.1, \
+        "placeholder perimeter 160 LF (2*50+2*30), got %.2f" % ext["total_length"]
+
+    # Placeholder has no interior partitions
+    assert "interior" not in s or s["interior"]["count"] == 0, \
+        "placeholder should have no interior walls"
+
+    print("PASS: project_builder build_schedule for 8_greatmeadow placeholder (%d ext walls, %.1f LF)" % (
+        ext["count"], ext["total_length"]
+    ))
+
+
 if __name__ == "__main__":
     test_compute_perimeter_simple_rectangle()
     test_compute_perimeter_baseline()
@@ -723,4 +800,6 @@ if __name__ == "__main__":
     test_dxf_converter_extract_perimeter()
     test_dxf_converter_extract_walls()
     test_dxf_layer_map_8gm()
+    test_compare_schedules()
+    test_project_builder_schedule_8gm()
     print("\nAll tests passed.")
