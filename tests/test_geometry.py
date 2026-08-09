@@ -45,7 +45,7 @@ from rhino_engine.config_validator import validate
 from project_builder import build_schedule, compare_schedules, _parse_args
 from dxf_converter import (
     classify_line, polygon_area, merge_collinear_lines,
-    extract_perimeter, extract_interior_walls,
+    extract_perimeter, extract_interior_walls, convert_dxf,
 )
 
 try:
@@ -782,6 +782,103 @@ def test_project_builder_schedule_8gm():
     ))
 
 
+def test_dxf_to_schedule_round_trip():
+    """Full pipeline: synthetic DXF -> convert_dxf -> build_schedule -> verified counts."""
+    if not _HAS_EZDXF:
+        print("SKIP: test_dxf_to_schedule_round_trip (ezdxf not installed)")
+        return
+
+    import tempfile
+    import shutil
+
+    # Build a synthetic basement DXF: 40 x 25 ft rectangle + interior walls
+    doc = _ezdxf.new('R2010')
+    msp = doc.modelspace()
+
+    # Perimeter: 40 x 25 ft CCW rectangle on FOUNDATION layer
+    perim_pts = [(0, 0), (40, 0), (40, 25), (0, 25)]
+    lwpoly = msp.add_lwpolyline(perim_pts, dxfattribs={'layer': 'FOUNDATION'})
+    lwpoly.closed = True
+
+    # Interior walls on INT-WALL
+    # H wall dividing top/bottom halves
+    msp.add_line((0, 12.5, 0), (40, 12.5, 0), dxfattribs={'layer': 'INT-WALL'})
+    # V wall in south half
+    msp.add_line((15, 0, 0), (15, 12.5, 0), dxfattribs={'layer': 'INT-WALL'})
+    # V wall in north half
+    msp.add_line((28, 12.5, 0), (28, 25, 0), dxfattribs={'layer': 'INT-WALL'})
+
+    # Structural beam wall on STRUCT (full width)
+    msp.add_line((0, 6, 0), (40, 6, 0), dxfattribs={'layer': 'STRUCT'})
+
+    # Write to a temp directory, convert, verify, clean up
+    tmpdir = tempfile.mkdtemp()
+    try:
+        tmp_dxf = os.path.join(tmpdir, "roundtrip.dxf")
+        doc.saveas(tmp_dxf)
+
+        layer_map = {
+            "perimeter": ["FOUNDATION"],
+            "interior":  {"INT-WALL": {"t": 0.5}},
+            "structural": {"STRUCT": {"t": 0.67}},
+            "demo": {},
+            "hatch": [],
+        }
+
+        config = convert_dxf(
+            tmp_dxf, layer_map, "test_roundtrip", "Test Roundtrip",
+            floor_z=-8.17, wall_top_z=0.0, unit_scale=1.0,
+        )
+
+        # Perimeter must have 4 vertices and correct segment count
+        verts = config["perimeter"]["outer_polygon"]["vertices"]
+        thicknesses = config["perimeter"]["outer_polygon"]["segment_thickness"]
+        assert len(verts) == 4, "expected 4 perimeter vertices, got %d" % len(verts)
+        assert len(thicknesses) == 4, "thickness count must match vertex count"
+        assert all(abs(t - 0.833) < 0.001 for t in thicknesses), "default thickness must be 0.833"
+
+        # Interior partitions: 3 INT-WALL + 1 STRUCT
+        parts = config.get("interior_partitions", [])
+        assert len(parts) == 4, "expected 4 partitions (3 int + 1 struct), got %d" % len(parts)
+        struct_count = sum(1 for p in parts if p.get("type") == "struct")
+        assert struct_count == 1, "expected 1 struct partition, got %d" % struct_count
+
+        # Feed config into build_schedule
+        schedule = build_schedule(config)
+        s = schedule["summary_by_type"]
+
+        # Exterior: 4 perimeter walls, 2*40 + 2*25 = 130 LF
+        assert "exterior" in s, "must have exterior walls"
+        assert s["exterior"]["count"] == 4, \
+            "expected 4 exterior walls, got %d" % s["exterior"]["count"]
+        assert abs(s["exterior"]["total_length"] - 130.0) < 1.0, \
+            "exterior LF should be ~130, got %.2f" % s["exterior"]["total_length"]
+
+        # Interior: 3 walls
+        assert "interior" in s, "must have interior walls"
+        assert s["interior"]["count"] == 3, \
+            "expected 3 interior walls, got %d" % s["interior"]["count"]
+
+        # Struct: 1 wall
+        assert "struct" in s, "must have struct walls"
+        assert s["struct"]["count"] == 1, \
+            "expected 1 struct wall, got %d" % s["struct"]["count"]
+
+        # All exterior walls must have positive length and area
+        for w in schedule["walls"]:
+            if w["type"] == "exterior":
+                assert w["length"] > 0, "exterior wall %s has zero length" % w["id"]
+                assert w["face_area_sf"] > 0, "exterior wall %s has zero area" % w["id"]
+
+        print("PASS: DXF -> project_config -> wall_schedule round trip (%d ext, %d int, %d struct)" % (
+            s["exterior"]["count"],
+            s["interior"]["count"],
+            s["struct"]["count"],
+        ))
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)
+
+
 if __name__ == "__main__":
     test_compute_perimeter_simple_rectangle()
     test_compute_perimeter_baseline()
@@ -802,4 +899,5 @@ if __name__ == "__main__":
     test_dxf_layer_map_8gm()
     test_compare_schedules()
     test_project_builder_schedule_8gm()
+    test_dxf_to_schedule_round_trip()
     print("\nAll tests passed.")

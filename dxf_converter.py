@@ -270,9 +270,8 @@ def extract_interior_walls(doc, layer_config, unit_scale=1.0, merge_tol=0.1):
                 "y": round(y, 4),
                 "x0": round(x0, 4),
                 "x1": round(x1, 4),
+                "type": wtype,
             }
-            if wtype != 'interior':
-                p["type"] = wtype
             partitions.append(p)
 
     for (wtype, thickness), lines in sorted(v_raw.items()):
@@ -284,9 +283,8 @@ def extract_interior_walls(doc, layer_config, unit_scale=1.0, merge_tol=0.1):
                 "x": round(x, 4),
                 "y0": round(y0, 4),
                 "y1": round(y1, 4),
+                "type": wtype,
             }
-            if wtype != 'interior':
-                p["type"] = wtype
             partitions.append(p)
 
     diagonals = []
@@ -296,9 +294,8 @@ def extract_interior_walls(doc, layer_config, unit_scale=1.0, merge_tol=0.1):
             "p1": [round(p1[0], 4), round(p1[1], 4)],
             "p2": [round(p2[0], 4), round(p2[1], 4)],
             "t": round(thickness, 4),
+            "type": wtype,
         }
-        if wtype != 'interior':
-            d["type"] = wtype
         diagonals.append(d)
 
     return partitions, diagonals

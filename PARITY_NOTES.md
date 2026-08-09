@@ -19,6 +19,23 @@
 - 19/19 tests passing (2 new: `test_compare_schedules`,
   `test_project_builder_schedule_8gm`).
 
+### Update 2026-08-09 (session 2)
+
+- **Bug fix in `dxf_converter.py`**: partitions produced by `extract_interior_walls`
+  now always include an explicit `"type"` field (e.g. `"type": "interior"`).
+  Previously, interior walls had no `"type"` key, and `wall_schedule()` silently
+  defaulted missing types to `"exterior"`, causing dxf-converted configs to report
+  all interior walls as exterior.  The 12FH config was unaffected (it has explicit
+  `"type": "interior"` on every partition).
+
+- **New test: `test_dxf_to_schedule_round_trip`**: creates a synthetic DXF in
+  memory (40x25 ft perimeter, 3 interior walls, 1 structural wall), runs the full
+  pipeline through `convert_dxf` and `build_schedule`, and verifies wall counts
+  and exterior linear-footage.  This is the end-to-end Chunk 9 test that can run
+  without the real DXF file.
+
+- 20/20 tests passing.
+
 ### Blocker — requires local access
 
 The roadmap chunk requires comparing the 3D build against actual AutoCAD
