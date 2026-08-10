@@ -1,12 +1,43 @@
 # Rhino Estimation Engine — Parity Roadmap
 
+> ## STATUS: RETIRED — SUPERSEDED BY atelier-studio (2026-08-10)
+>
+> **All chunks are closed. The scheduled agent must stop. Do not start new chunks
+> and do not resume this roadmap.**
+>
+> This engine has been superseded by `wrleta/atelier-studio` (the app served at
+> studio.frportal.co), which already implements the full takeoff pipeline this
+> roadmap was working toward, natively and in the browser:
+>
+> | This roadmap was building | atelier-studio already ships |
+> |---|---|
+> | `walls.py wall_schedule()` — LF/SF per wall type | `src/studio/model/takeoff.ts` — wall LF+SF, floor area, roof footprint + slope-corrected area, eave/gutter LF, opening counts |
+> | `dxf_converter.py` — DXF ingest | `dxf-parser` + `@mlightcad/libredwg-web` + `src/shared/file-io/dxf-export.ts` |
+> | Rhino 8 via IronPython 2.7 + `.trigger` file watcher | `rhino3dm@8.17` in-process, `src/shared/file-io/threedm-{import,export}.ts` |
+> | Chunk 10 "viewer integration" | `src/studio/takeoff/TakeoffPanel.tsx` + top-bar Takeoff button (shipped 2026-05-25) |
+> | (not planned) | Pricing tiers + "Send to RK Office" push, creating real estimate records |
+>
+> Three things from this repo are worth preserving and are being ported into
+> atelier-studio rather than deleted:
+>
+> 1. **The 12 Fox Hollow verified baseline** (see next section) — hand-validated
+>    ground truth, becomes a takeoff regression fixture.
+> 2. **`project_config.json` per-wall CAD provenance** (`"note": "per CAD wall_071"`)
+>    — traceability that `takeoff.ts` does not currently model.
+> 3. **`dxf_converter.py`'s hatch-scale → roof-pitch heuristic** — `takeoff.ts`
+>    takes `pitchOver12` as an input rather than deriving it.
+>
+> Everything else here (primitives, walls, layers, zones, project_builder) is
+> superseded. This repo is kept for reference and for the baseline data only.
+
 ## What This Is
 Refactoring the 12 Fox Hollow Rhino build scripts into a reusable estimation engine
 that works on ANY project. The engine takes project JSON config as input and builds
 3D models in Rhino for quantity takeoff.
 
 ## How It Gets Done
-- A scheduled agent picks up chunks during low-usage weeks
+- ~~A scheduled agent picks up chunks during low-usage weeks~~ **(retired — see STATUS above;
+  the "Rhino Engine Parity — Nightly Grind" Routine should be disabled)**
 - Each chunk: code → test → verify against 12FH baseline → iterate until passing → commit
 - Progress tracked in this file (checkboxes below)
 
@@ -130,11 +161,16 @@ all counts and measurements must match within 0.01 tolerance.
     (4) run project_builder.py --project 8_greatmeadow --verify, iterate until within 5%
   - See PARITY_NOTES.md for detailed step-by-step instructions
 
-- [ ] **Chunk 10 — Viewer integration**
-  - Ensure takeoff.json gets generated for new projects
-  - Verify viewer loads and displays correctly
-  - Test project switcher in the UI
-  - VERIFY: both projects visible and navigable in viewer
+- [x] **Chunk 10 — Viewer integration** (CLOSED 2026-08-10 — superseded, not built)
+  - Original scope: generate takeoff.json, verify viewer loads, test project switcher.
+  - **This chunk was never achievable in this repo.** It referenced `takeoff/server.mjs`,
+    `takeoff/ui/app.js` and `takeoff.json`, none of which exist here or have ever been
+    committed — see the File Locations section, which points at paths on Walter's
+    local machine.
+  - The viewer it describes became `wrleta/atelier-studio` (studio.frportal.co).
+    Takeoff UI shipped there 2026-05-25 as `TakeoffPanel.tsx`, including a per-trade
+    rollup and a "Send to RK Office" pricing push.
+  - Closed as superseded. No further work belongs in this repo.
 
 ---
 
@@ -180,7 +216,9 @@ For each chunk:
 8. Update this roadmap (check the box)
 
 ## File Locations
-- Engine repo: https://github.com/wrleta/rhino-engine (private)
+- Engine repo: https://github.com/wrleta/rhino-engine — **PUBLIC** (this line previously
+  claimed "private"; it is not. This repo contains client addresses and complete floor-plan
+  vertex data. Review visibility.)
 - Engine local: C:\Users\Walter\rhino-engine-repo\rhino_engine\
 - 12FH project: C:\Users\Walter\iCloudDrive\Documents\Work\windowsmac\estimates\12_fox_hollow\
 - 12FH baseline: v30_wall_schedule.json (17 ext, 51 int, 5 struct, 13/13 openings)
